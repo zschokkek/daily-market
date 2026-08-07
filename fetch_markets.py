@@ -605,6 +605,16 @@ for ev in events:
     raw_title = ev.get("title") or ev.get("event_ticker")
     expanded_title = expand_team_name(raw_title) if broad=="sports" else raw_title
     location = get_location(ev.get("event_ticker",""), expanded_title or "", broad, raw_cat, sub)
+    # tag country for international ELECT — so Israel/Saudi not just ELECT
+    if broad == "politics" and sub_for_pool == "ELECT" and location not in US_STATES and location not in ("DC","US","N/A"):
+        # foreign country (Israel, Canada, Brazil, Iran etc) or World/EU/UK
+        foreign_tag = location.upper().replace(" ", "_")
+        # normalize World/EU/UK stay as is, others like Israel
+        if foreign_tag in ("WORLD","EU","UK"):
+            sub_for_pool = foreign_tag
+        else:
+            sub_for_pool = foreign_tag
+        detail = f"Politics · {sub_for_pool}"
 
     pool.append({
         "name": expanded_title,
