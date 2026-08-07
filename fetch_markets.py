@@ -549,10 +549,20 @@ for ev in events:
         detail = f"Companies · {bs}" if raw_cat in ("Companies","Financials","Economics") else f"{raw_cat or 'Business'} · {bs}"
         sub_for_pool = bs
     elif broad=="politics":
-        # all elections → ELECT, no GOVNY/SENATENY nonsense
         ticker_up = (ev.get("event_ticker","") or "").upper()
+        title_up = (ev.get("title") or "").upper()
+        # intuitive buckets: SENATE / HOUSE / GOV / PRES / TRUMP / ELECT — no GOVNY/SENATENY nonsense
         if "HOUSE" in ticker_up or "KXHOUSE" in ticker_up:
             pl = "HOUSE"
+        elif "SENATE" in title_up or "SENATE" in ticker_up:
+            pl = "SENATE"
+        elif "GOVERNOR" in title_up or "GOV" in ticker_up:
+            # tickers: GOVPARTYCA-26, KXGOVCA-26 etc — all contain GOV
+            pl = "GOV"
+        elif "PRESIDENT" in title_up or "PRESIDENTIAL" in title_up or ticker_up.startswith("KX2028"):
+            pl = "PRES"
+        elif "TRUMP" in title_up or "TRUMP" in ticker_up:
+            pl = "TRUMP"
         else:
             pl = "ELECT"
         sub_for_pool = pl

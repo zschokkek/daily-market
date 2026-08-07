@@ -54,7 +54,7 @@ body{background:#fff;color:#121213}
   <div class="grid grid-cols-[1.4fr_0.65fr_0.5fr_0.48fr_0.35fr_0.4fr_0.55fr_0.5fr] gap-1.5 px-1">
     <div class="text-[11px] font-black tracking-[0.14em] text-[#121213]" title="Market name (e.g., New York House Races)">MARKET</div>
     <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center" title="Broad: sports · politics · business · prices · weather · culture">CATEGORY</div>
-    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center" title="League / sub-market: MLB, ELECT, HOUSE, TECH, CMDTY…">DETAIL</div>
+    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center" title="League / sub-market: MLB, NFL, CBB, SENATE, HOUSE, GOV, PRES, TRUMP, TECH, CMDTY…">DETAIL</div>
     <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center" title="State if USA (MA, NY), country if abroad, N/A for prices">LOC</div>
     <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center" title="# outcomes. Custom House bunches (NYHOUSE) = 2 (D vs R), not sum of districts">STRIKES</div>
     <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center" title="Favorite's odds (¢) — highest yes price among strikes; bunched markets (CAHOUSE / CAMOV / CAVOTETURN) = volume-weighted avg of favorites, live-refreshed on open. Markets ≥97¢ filtered out">PRICE</div>
@@ -96,7 +96,7 @@ body{background:#fff;color:#121213}
     <ol class="list-decimal pl-5 text-[14px] leading-relaxed mt-3 space-y-2 font-medium">
       <li>Guess the secret Kalshi market of the day.</li>
       <li>Pool: <b>sports futures always</b> + <b>single games only if today/live</b> + <b>all politics/business/prices/weather/culture open</b>. House districts are bunched per state — <b>NYHOUSE = New York House Races (custom 2-way D vs R, 2 strikes, shows one district when correct)</b>.</li>
-      <li>Six broads: <b>sports</b> · <b>politics</b> (ELECT or HOUSE) · <b>business</b> (TECH/FINANCE/CORP) · <b>prices</b> (crypto/CMDTY only on $) · <b>weather</b> (HEAT/RAIN/HURRICANE) · <b>culture</b> (MUSIC/FILM/TV & CELEB). Abbreviations show as tags: <b>NRSC → Republican</b>.</li>
+      <li>Six broads: <b>sports</b> · <b>politics</b> (SENATE / HOUSE / GOV / PRES / TRUMP / ELECT) · <b>business</b> (TECH/FINANCE/CORP) · <b>prices</b> (crypto/CMDTY only on $) · <b>weather</b> (HEAT/RAIN/HURRICANE) · <b>culture</b> (MUSIC/FILM/TV & CELEB). Abbreviations show as tags: <b>NRSC → Republican</b>.</li>
       <li>After each guess: <span class="inline-block w-3 h-3 bg-[#6aaa64] align-middle"></span> green = exact, <span class="inline-block w-3 h-3 bg-[#c9b458] align-middle"></span> yellow = close (e.g., market name shares ≥2 words, same region for LOC). Arrows: <b>▲/▼</b> = higher/lower (price/volume/strikes), <b>←/→</b> = earlier/later (dates). <b>LOC</b>=state/country (N/A for prices). <b>EXPIRES</b> as <b>Aug 08, 26</b>.</li>
       <li><b>STRIKES</b> = #outcomes (custom House bunches like NYHOUSE = 2, grouped margin/turnout keep mode: House Margin 9, House Turnout 5). <b>PRICE</b> = favorite’s odds (¢) — highest yes price; bunched markets (CAHOUSE / CAMOV / CAVOTETURN) = volume-weighted avg, live-refreshed on open. <b>VOLUME</b> = total $ volume — bunched = sum across districts in state.</li>
       <li>10 tries. Share copies with a sleek “Copied” toast for 2s.</li>
@@ -272,7 +272,7 @@ async function loadPool(){
       else if(broad==="prices"){ let ps=pricesSubcat(m.ticker||"", m.title||"", sub); detail=`Prices · ${ps}`; subForPool=ps; }
       else if(broad==="culture"){ let cs=cultureSubcat(m.ticker||"", m.title||"", sub); detail=`Culture · ${cs}`; subForPool=cs; }
       else if(broad==="business"){ let bs=businessSubcat(m.ticker||"", m.title||"", sub); subForPool=bs; detail = raw ? `${raw} · ${bs}` : `Business · ${bs}`; }
-      else if(broad==="politics"){ const up=(m.ticker||"").toUpperCase(); const pl = (up.includes("HOUSE")||up.includes("KXHOUSE")) ? "HOUSE" : "ELECT"; subForPool=pl; detail=`Politics · ${pl}`; }
+      else if(broad==="politics"){ const up=(m.ticker||"").toUpperCase(); const tu=(m.title||"").toUpperCase(); let pl="ELECT"; if(up.includes("HOUSE")||up.includes("KXHOUSE")) pl="HOUSE"; else if(tu.includes("SENATE")||up.includes("SENATE")) pl="SENATE"; else if(tu.includes("GOVERNOR")||up.includes("GOV")) pl="GOV"; else if(tu.includes("PRESIDENT")||tu.includes("PRESIDENTIAL")||up.startsWith("KX2028")) pl="PRES"; else if(tu.includes("TRUMP")||up.includes("TRUMP")) pl="TRUMP"; subForPool=pl; detail=`Politics · ${pl}`; }
       else { subForPool=(sub||broad); detail = (raw && subForPool) ? `${raw} · ${subForPool}` : (raw||broad); }
       let vol = m.volume || m.volume_24h || 0;
       vol = Number(vol)||0;
@@ -316,7 +316,7 @@ async function loadPool(){
         else if(broad==="prices"){ let ps=pricesSubcat(mk.ticker||"", name, sub); detail=`Prices · ${ps}`; subFinal=ps; }
         else if(broad==="culture"){ let cs=cultureSubcat(mk.ticker||"", name, sub); detail=`Culture · ${cs}`; subFinal=cs; }
         else if(broad==="business"){ let bs=businessSubcat(mk.ticker||"", name, sub); subFinal=bs; detail=(raw && bs)?`${raw} · ${bs}`: `Business · ${bs}`; }
-        else if(broad==="politics"){ const up=(mk.ticker||"").toUpperCase(); const pl=(up.includes("HOUSE")||up.includes("KXHOUSE")) ? "HOUSE" : "ELECT"; subFinal=pl; detail=`Politics · ${pl}`; }
+        else if(broad==="politics"){ const up=(mk.ticker||"").toUpperCase(); const tu=(name||"").toUpperCase(); let pl="ELECT"; if(up.includes("HOUSE")||up.includes("KXHOUSE")) pl="HOUSE"; else if(tu.includes("SENATE")||up.includes("SENATE")) pl="SENATE"; else if(tu.includes("GOVERNOR")||up.includes("GOV")) pl="GOV"; else if(tu.includes("PRESIDENT")||tu.includes("PRESIDENTIAL")||up.startsWith("KX2028")) pl="PRES"; else if(tu.includes("TRUMP")||up.includes("TRUMP")) pl="TRUMP"; subFinal=pl; detail=`Politics · ${pl}`; }
         else { subFinal=(sub||broad); detail=(raw && subFinal)?`${raw} · ${subFinal}`: (raw||broad); }
         livePool.push({name, broad, subcat: subFinal, category:detail, raw_category:raw||broad, strikes, expiration:exp, expDay, volume:Math.round(vol), ticker: mk.ticker||mk.ticker_name||ev.event_ticker, event_ticker: ev.event_ticker});
       }
@@ -378,7 +378,7 @@ async function loadPool(){
     else if(broad==="prices" && (!cat || cat===broad || cat==="prices")){ const ps=pricesSubcat(p.ticker||"", p.name||"", p.subcat||""); cat=`Prices · ${ps}`; sub=ps; }
     else if(broad==="culture" && (!cat || cat===broad || cat==="culture")){ const cs=cultureSubcat(p.ticker||"", p.name||"", p.subcat||""); cat=`Culture · ${cs}`; sub=cs; }
     else if(broad==="business" && (!sub || !cat || cat===broad || cat==="business")){ const bs=businessSubcat(p.ticker||"", p.name||"", p.subcat||""); sub=bs; cat = p.raw_category && p.raw_category!==broad ? `${p.raw_category} · ${bs}` : `Business · ${bs}`; }
-    else if(broad==="politics"){ const up=(p.ticker||"").toUpperCase(); const pl=(up.includes("HOUSE")||up.includes("KXHOUSE")) ? "HOUSE" : "ELECT"; sub=pl; cat=`Politics · ${pl}`; }
+    else if(broad==="politics"){ const up=(p.ticker||"").toUpperCase(); const tu=(p.name||"").toUpperCase(); let pl="ELECT"; if(up.includes("HOUSE")||up.includes("KXHOUSE")) pl="HOUSE"; else if(tu.includes("SENATE")||up.includes("SENATE")) pl="SENATE"; else if(tu.includes("GOVERNOR")||up.includes("GOV")) pl="GOV"; else if(tu.includes("PRESIDENT")||tu.includes("PRESIDENTIAL")||up.startsWith("KX2028")) pl="PRES"; else if(tu.includes("TRUMP")||up.includes("TRUMP")) pl="TRUMP"; sub=pl; cat=`Politics · ${pl}`; }
     else { sub=(sub||broad); }
     // location: state if USA, country if not, N/A for prices, businesses have state — includes full state names for MA/CA etc.
     let loc=p.location;
@@ -865,7 +865,11 @@ function renderAutocomplete(q){
     esports: ["esports","lol","league of legends","cs2","valorant","esports prop","league prop","gaming","e sports","esport"],
     sb: ["super bowl","superbowl","sb","pro football champion","championship game","super bowl champion","sb champ","big game","super bowl prop","nfl champion"],
     weather: ["weather","heat","rain","hurricane","snow","quake","temperature","climate","storm","tornado"],
-    elect: ["elect","election","elections","politics","political","vote","senate","governor","president","congress","campaign","candidate","ballot","senate race","governor race","midterms","primary","presidential"],
+    elect: ["elect","election","elections","politics","political","vote","congress","campaign","candidate","ballot","midterms","primary"],
+    senate: ["senate","senate race","senator","senate election","us senate","senate control"],
+    gov: ["gov","governor","governor race","gov race","gubernatorial"],
+    pres: ["pres","president","presidential","pres race","pres election","presidential nomination","white house"],
+    trump: ["trump","donald trump","trump term","trump admin","trump cabinet","maga"],
     house: ["house","nyhouse","cahouse","house races","house race","congress house","representative","district","us house","house district"],
     tech: ["tech","technology","apple","tesla","spacex","google","microsoft","nvidia","meta","netflix","ai","software","openai","amazon tech"],
     finance: ["finance","gdp","economy","economic","inflation","cpi","bank","fed","rate","market","stocks","nasdaq","s&p"],
