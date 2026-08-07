@@ -92,6 +92,23 @@ body{background:#fff;color:#121213}
 </footer>
 
 <div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#121213] text-white text-[13px] font-black tracking-wide px-5 py-3 rounded-full shadow-lg z-50 transition-opacity">Copied</div>
+<!-- Mobile swipe tip — shows once on phones ≤640px -->
+<div id="mobile-tip" class="hidden fixed inset-0 bg-white/95 z-[60] grid place-items-center p-4">
+  <div class="bg-white border-2 border-[#121213] max-w-[360px] w-full p-6 text-center">
+    <div class="text-[18px] font-black">HOW TO PLAY ON MOBILE</div>
+    <div class="text-[13px] font-medium text-[#374151] mt-3 leading-snug">
+      Swipe <b>← →</b> on the board to see all 8 columns.<br/>
+      <span class="inline-block mt-2 text-[11px] font-bold tracking-wide bg-[#f3f4f6] border border-[#d3d6da] px-2 py-1">MARKET • CATEGORY • DETAIL • LOC • STRIKES • PRICE • EXPIRES • VOLUME</span>
+    </div>
+    <div class="flex justify-center gap-2 mt-3 text-[11px] font-bold">
+      <span class="inline-flex items-center gap-1"><span class="w-3 h-3 bg-[#6aaa64] inline-block"></span> exact</span>
+      <span class="inline-flex items-center gap-1"><span class="w-3 h-3 bg-[#c9b458] inline-block"></span> close</span>
+      <span class="inline-flex items-center gap-1"><span class="w-3 h-3 bg-[#787c7e] inline-block"></span> miss</span>
+      <span class="inline-flex items-center gap-1">▲ ▼</span>
+    </div>
+    <button id="mobile-tip-close" class="mt-5 w-full h-10 bg-[#121213] text-white text-[13px] font-black tracking-wide">GOT IT</button>
+  </div>
+</div>
 <div id="modal" class="hidden fixed inset-0 bg-white/90 z-50 grid place-items-center p-4">
   <div class="bg-white border-2 border-[#121213] max-w-[520px] w-full p-6">
     <div class="flex items-center justify-between">
@@ -119,6 +136,7 @@ const TODAY_ISO = new Date().toISOString().slice(0,10);
 const MAX_GUESSES = 10;
 let POOL = [];
 let TARGET = null;
+let GAVE_UP = false;
 
 // broad helpers — must match fetch_markets.py
 const BROAD_ORDER = ["sports","politics","business","prices","weather","culture"];
@@ -810,8 +828,8 @@ function updateTries(){
   document.getElementById('tries-left').style.color = left<=2 ? '#dc2626' : '#121213';
 }
 function checkEnd(celebrate){
-  const won=guesses.some(g=>g.ticker===TARGET.ticker);
-  const lost=guesses.length>=MAX_GUESSES && !won;
+  const won=guesses.some(g=>g.ticker===TARGET.ticker) && !GAVE_UP;
+  const lost=(guesses.length>=MAX_GUESSES && !won) || GAVE_UP;
   if(won||lost){
     document.getElementById('guess-btn').disabled=true;
     document.getElementById('guess-input').disabled=true;
@@ -840,7 +858,7 @@ function checkEnd(celebrate){
   return won||lost;
 }
 function shareText(){
-  const won=guesses.some(g=>g.ticker===TARGET.ticker);
+  const won=guesses.some(g=>g.ticker===TARGET.ticker) && !GAVE_UP;
   const header= won ? `KXDaily ${TODAY_ISO} ${guesses.length}/${MAX_GUESSES}` : `KXDaily ${TODAY_ISO} X/${MAX_GUESSES}`;
   let grid="";
   for(const g of guesses){
@@ -1045,6 +1063,7 @@ function doGuess(){
 }
 document.getElementById('giveup').addEventListener('click', ()=>{
   if(!confirm('Reveal answer?')) return;
+  GAVE_UP = true;
   if(!guesses.some(g=>g.ticker===TARGET.ticker)){ guesses.push(TARGET); addRow(TARGET,true); saveState(); }
   checkEnd(false);
 });
@@ -1069,6 +1088,18 @@ document.getElementById('result-reveal').addEventListener('click', ()=> alert(`$
 document.getElementById('how-btn').addEventListener('click', ()=> document.getElementById('modal').classList.remove('hidden'));
 document.getElementById('modal-close').addEventListener('click', ()=> document.getElementById('modal').classList.add('hidden'));
 document.getElementById('modal').addEventListener('click', e=>{ if(e.target.id==='modal') e.currentTarget.classList.add('hidden'); });
+// mobile swipe tip — show once on phones
+(function(){
+  const tip=document.getElementById('mobile-tip');
+  const btn=document.getElementById('mobile-tip-close');
+  const key='kalshi-wordle-mobile-tip-seen';
+  function show(){ if(window.innerWidth<=640 && !localStorage.getItem(key)) tip.classList.remove('hidden'); }
+  function hide(){ tip.classList.add('hidden'); localStorage.setItem(key,'1'); }
+  if(btn) btn.addEventListener('click', hide);
+  if(tip) tip.addEventListener('click', e=>{ if(e.target===tip) hide(); });
+  // show after pool loads (short delay so it doesn't flash before content)
+  setTimeout(show, 500);
+})();
 if(new URLSearchParams(location.search).has('reset')){
   localStorage.removeItem('kalshi-wordle-guesses-'+TODAY_ISO);
   localStorage.removeItem('kalshi-wordle-target-'+TODAY_ISO);
