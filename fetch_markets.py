@@ -175,11 +175,33 @@ def weather_subcat(ticker, title, subcategory):
     return "WEATHER"
 
 US_STATES = ["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","DC"]
-CITY_TO_STATE = {"NEW YORK":"NY","NYC":"NY","LOS ANGELES":"CA","LA":"CA","CHICAGO":"IL","BOSTON":"MA","PITTSBURGH":"PA","PHILADELPHIA":"PA","TORONTO":"ON","MONTREAL":"QC","MIAMI":"FL","ATLANTA":"GA","SEATTLE":"WA","SAN FRANCISCO":"CA","HOUSTON":"TX","DALLAS":"TX","WASHINGTON":"DC","DETROIT":"MI","CLEVELAND":"OH","DENVER":"CO","PHOENIX":"AZ"}
+CITY_TO_STATE = {"NEW YORK":"NY","NYC":"NY","MANHATTAN":"NY","LOS ANGELES":"CA","LA":"CA","CHICAGO":"IL","BOSTON":"MA","PITTSBURGH":"PA","PHILADELPHIA":"PA","TORONTO":"ON","MONTREAL":"QC","MIAMI":"FL","ATLANTA":"GA","SEATTLE":"WA","SAN FRANCISCO":"CA","HOUSTON":"TX","DALLAS":"TX","WASHINGTON":"DC","DETROIT":"MI","CLEVELAND":"OH","DENVER":"CO","PHOENIX":"AZ","PROVIDENCE":"RI","ST PETERSBURG":"FL","LOUISVILLE":"KY","NAVAJO":"AZ"}
 STATE_FULL_TO_CODE = {"ALABAMA":"AL","ALASKA":"AK","ARIZONA":"AZ","ARKANSAS":"AR","CALIFORNIA":"CA","COLORADO":"CO","CONNECTICUT":"CT","DELAWARE":"DE","FLORIDA":"FL","GEORGIA":"GA","HAWAII":"HI","IDAHO":"ID","ILLINOIS":"IL","INDIANA":"IN","IOWA":"IA","KANSAS":"KS","KENTUCKY":"KY","LOUISIANA":"LA","MAINE":"ME","MARYLAND":"MD","MASSACHUSETTS":"MA","MICHIGAN":"MI","MINNESOTA":"MN","MISSISSIPPI":"MS","MISSOURI":"MO","MONTANA":"MT","NEBRASKA":"NE","NEVADA":"NV","NEW HAMPSHIRE":"NH","NEW JERSEY":"NJ","NEW MEXICO":"NM","NEW YORK":"NY","NORTH CAROLINA":"NC","NORTH DAKOTA":"ND","OHIO":"OH","OKLAHOMA":"OK","OREGON":"OR","PENNSYLVANIA":"PA","RHODE ISLAND":"RI","SOUTH CAROLINA":"SC","SOUTH DAKOTA":"SD","TENNESSEE":"TN","TEXAS":"TX","UTAH":"UT","VERMONT":"VT","VIRGINIA":"VA","WASHINGTON":"WA","WEST VIRGINIA":"WV","WISCONSIN":"WI","WYOMING":"WY","DISTRICT OF COLUMBIA":"DC"}
 MLB_FULL = {"A'S":"Athletics","ATHLETICS":"Athletics","BOS":"Boston Red Sox","BOSTON":"Boston Red Sox","NYY":"New York Yankees","NYM":"New York Mets","PIT":"Pittsburgh Pirates","PITTSBURGH":"Pittsburgh Pirates","NY":"New York Yankees","TOR":"Toronto Blue Jays","CHC":"Chicago Cubs","CWS":"Chicago White Sox","LAD":"Los Angeles Dodgers","LAA":"Los Angeles Angels","SF":"San Francisco Giants","HOU":"Houston Astros","SEA":"Seattle Mariners","TEX":"Texas Rangers","ATL":"Atlanta Braves","MIA":"Miami Marlins","PHI":"Philadelphia Phillies","WSH":"Washington Nationals","BAL":"Baltimore Orioles","TB":"Tampa Bay Rays","CIN":"Cincinnati Reds","CLE":"Cleveland Guardians","DET":"Detroit Tigers","KC":"Kansas City Royals","MIN":"Minnesota Twins","MIL":"Milwaukee Brewers","STL":"St. Louis Cardinals","CHW":"Chicago White Sox"}
 COUNTRY_KEYS = ["ARGENTINA","BRAZIL","BULGARIA","CAPE VERDE","ESTONIA","FRANCE","GHANA","HUNGARY","MOLDOVA","MONGOLIA","PHILIPPINES","SOUTH KOREA","WORLD","EU","UK","CANADA","MEXICO","GERMANY","JAPAN","KOREA",
-               "ISRAEL","SAUDI ARABIA","SAUDI","QATAR","SYRIA","PANAMA","TAIWAN","NORTH KOREA","KOREA","CHINA","IRAN","RUSSIA","UKRAINE","PALESTINE","GAZA"]
+               "ISRAEL","SAUDI ARABIA","SAUDI","QATAR","SYRIA","PANAMA","TAIWAN","NORTH KOREA","KOREA","CHINA","IRAN","RUSSIA","UKRAINE","PALESTINE","GAZA",
+               "TURKEY","ZAMBIA","PERU","MALAYSIA","SWEDEN","AUSTRALIA","INDIA","ROMANIA","VENEZUELA","GAMBIA","GUATEMALA","AFRICA","VATICAN","EGYPT","YEMEN"]
+# Demonym / city / region aliases -> canonical country/continent for international markets
+COUNTRY_ALIASES = {
+    "FRENCH": "France", "FRENCH PRES": "France",
+    "GERMAN": "Germany", "MECKLENBURG": "Germany",
+    "TURKISH": "Turkey", "TURKEY": "Turkey",
+    "ZAMBIAN": "Zambia", "ZAMBIA": "Zambia",
+    "PERUVIAN": "Peru", "LIMA": "Peru", "MINAS GERAIS": "Brazil", "MINAS": "Brazil",
+    "MALAYSIAN": "Malaysia", "MALAYSIA": "Malaysia",
+    "SWEDISH": "Sweden", "SWEDEN": "Sweden",
+    "SCOTTISH": "UK", "SCOTLAND": "UK", "SCOT": "UK",
+    "GAMBIAN": "Gambia", "GAMBIA": "Gambia",
+    "GUATEMALAN": "Guatemala", "GUATEMALA": "Guatemala",
+    "ALBERTA": "Canada", "QUEBEC": "Canada", "VANCOUVER": "Canada",
+    "LONDON": "UK", "CLACTON": "UK", "ISLE OF MAN": "UK", "BURNHAM": "UK",
+    "HORMUZ": "Iran", "BAB EL": "Yemen", "SUEZ": "Egypt",
+    "AUSTRALIAN": "Australia", "AFRICAN": "Africa", "AFRICA": "Africa",
+    "VATICAN": "Vatican", "POPE": "Vatican",
+    "INDIAN": "India", "ROMANIAN": "Romania", "VENEZUELAN": "Venezuela",
+    "GUAM": "World", "VIRGIN ISLANDS": "World", "ST PETERSBURG": "FL", "ST. PETERSBURG": "FL",
+    "MANHATTAN": "NY", "PROVIDENCE": "RI", "LOUISVILLE": "KY", "NAVAJO": "AZ",
+}
 COMPANY_TO_STATE = {"AMAZON":"WA","APPLE":"CA","GOOGLE":"CA","ALPHABET":"CA","MICROSOFT":"WA","TESLA":"TX","META":"CA","NETFLIX":"CA","NVIDIA":"CA","OPENAI":"CA","ANTHROPIC":"CA","CAVA":"DC","MCDONALD'S":"IL","MCDONALDS":"IL","STARBUCKS":"WA","CHIPOTLE":"CA","BOEING":"VA","WALMART":"AR","TARGET":"MN","COSTCO":"WA","FORD":"MI","GM":"MI","EXXON":"TX","CHEVRON":"CA","JPMORGAN":"NY","GOLDMAN":"NY","DISNEY":"CA","COCA-COLA":"GA","PEPSI":"NY","PFIZER":"NY","MODERNA":"MA","UBER":"CA","LYFT":"CA","AIRBNB":"CA","SPOTIFY":"NY"}
 
 def expand_team_name(short):
@@ -351,6 +373,10 @@ def get_location(event_ticker, title, broad, raw_cat, subcategory):
             if c=="WORLD": return "World"
             if c=="EU": return "EU"
             return c.title()
+    # 5b. demonym / city / waterway aliases -> country/continent
+    for alias, canonical in COUNTRY_ALIASES.items():
+        if alias in text:
+            return canonical
     # 6. business: try company HQ else DC for national US business
     if broad=="business":
         # finance (bank/lead IPO) should be NY even for CA companies like Anthropic
