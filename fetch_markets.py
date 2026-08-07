@@ -190,6 +190,9 @@ def get_location(event_ticker, title, broad, raw_cat, subcategory):
     if broad=="prices":
         return "N/A"
     text = f"{event_ticker} {title} {subcategory} {raw_cat}".upper()
+    # Oscar winners are in Los Angeles, CA — not DC
+    if "OSCAR" in text:
+        return "CA"
     import re
     # 1. full state names (Massachusetts Governor -> MA, California -> CA)
     for name, code in STATE_FULL_TO_CODE.items():
