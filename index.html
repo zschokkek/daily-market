@@ -803,23 +803,42 @@ function renderAutocomplete(q){
   const raw=(q||'').trim().toLowerCase();
   if(!raw){ ac.classList.add('hidden'); ac.innerHTML=''; return; }
   if(!POOL.length){ ac.classList.add('hidden'); return; }
-  // alias expansion for intuitive searches — deep pass for abbreviations
+    // alias map: every league -> 10-20 words people type — quick lookup, no hardcoded ifs
+  const LEAGUE_ALIASES = {
+    nfl: ["nfl","pro football","football","nfl football","pro fb","national football league","nfl prop","nfl future"],
+    nba: ["nba","pro basketball","basketball","national basketball association","nba prop"],
+    mlb: ["mlb","baseball","pro baseball","major league baseball","mlb game","mlb prop"],
+    cfb: ["cfb","college football","college fb","ncaaf","ncaa football","cfb prop","college ball"],
+    cbb: ["cbb","college basketball","college bb","ncaab","ncaa basketball","ncaa bb","college hoops","march madness"],
+    wnba: ["wnba","w nba","women nba"],
+    nhl: ["nhl","hockey","pro hockey","national hockey league"],
+    soccer: ["soccer","mls","epl","premier league","ucl","champions league","la liga","serie a","bundesliga","ligue 1","world cup","uecl","uel","leagues cup","coppa italia"],
+    golf: ["golf","pga","pga tour","us open golf","ryder cup","pga championship"],
+    tennis: ["tennis","atp","wta","us open tennis","wimbledon","grand slam"],
+    f1: ["f1","formula 1","formula1","formula one","grand prix","f1 race"],
+    ufc: ["ufc","mma","mixed martial arts","mma fight","boxing","wbc","ufc fight"],
+    esports: ["esports","lol","league of legends","cs2","valorant"],
+    sb: ["super bowl","superbowl","sb","pro football champion","championship game","super bowl champion","sb champ","big game"],
+    weather: ["weather","heat","rain","hurricane","snow","quake"],
+  };
+  // reverse: alias phrase -> canonical(s)
+  const ALIAS_LOOKUP = {};
+  for(const [canon, arr] of Object.entries(LEAGUE_ALIASES)){
+    for(const ph of arr) ALIAS_LOOKUP[ph]=canon;
+  }
   const aliasTokens=(s)=>{
     const t=s.toLowerCase().trim();
-    if(t==="super bowl"||t==="superbowl"||t==="super bowls") return ["sb","super bowl"];
-    if(t==="nfl"||t==="pro football"||t==="football") return ["nfl","football"];
-    if(t==="nba"||t==="pro basketball") return ["nba"];
-    if(t==="mlb") return ["mlb"];
-    if(t==="cfb"||t==="college football"||t==="college fb") return ["cfb","college football"];
-    if(t==="cbb"||t==="college basketball"||t==="college bb"||t==="ncaab") return ["cbb","college basketball"];
-    if(t==="nhl") return ["nhl"];
-    if(t==="wnba") return ["wnba"];
-    if(t==="f1") return ["f1"];
-    if(t==="ufc"||t==="mma") return ["ufc","mma"];
-    if(t==="pga"||t==="golf") return ["golf","pga"];
-    if(t==="atp"||t==="tennis") return ["tennis","atp"];
-    if(t==="nfl ") return ["nfl"];
-    return [];
+    if(ALIAS_LOOKUP[t]) return [ALIAS_LOOKUP[t], t];
+    // phrase contains alias (e.g., "college football coaches" contains "college football")
+    const hits=[];
+    for(const ph of Object.keys(ALIAS_LOOKUP)){
+      if(t===ph || t.includes(ph)) hits.push(ALIAS_LOOKUP[ph]);
+    }
+    // also add split tokens that are alias keys
+    for(const tok of t.split(/\s+/)){
+      if(ALIAS_LOOKUP[tok] && !hits.includes(ALIAS_LOOKUP[tok])) hits.push(ALIAS_LOOKUP[tok]);
+    }
+    return [...new Set(hits)];
   };
   const queryTokens=raw.split(/\s+/).filter(Boolean);
   const expanded=[...queryTokens, ...aliasTokens(raw)];
