@@ -50,14 +50,15 @@ body{background:#fff;color:#121213}
     </div>
   </div>
 
-  <!-- headers — split category into two + location -->
-  <div class="grid grid-cols-[1.5fr_0.5fr_0.55fr_0.5fr_0.4fr_0.6fr_0.55fr] gap-1.5 px-1">
+  <!-- headers — 8 cols: MARKET CATEGORY DETAIL LOC STRIKES PRICE EXPIRES VOLUME -->
+  <div class="grid grid-cols-[1.4fr_0.45fr_0.5fr_0.4fr_0.35fr_0.4fr_0.55fr_0.5fr] gap-1.5 px-1">
     <div class="text-[11px] font-black tracking-[0.14em] text-[#121213]" title="Market name (e.g., New York House Races)">MARKET</div>
     <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center" title="Broad: sports · politics · business · prices · weather · culture">CATEGORY</div>
     <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center" title="League / sub-market: MLB, ELECT, HOUSE, TECH, CMDTY…">DETAIL</div>
     <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center" title="State if USA (MA, NY), country if abroad, N/A for prices">LOC</div>
     <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center" title="# outcomes. Custom House bunches (NYHOUSE) = 2 (D vs R), not sum of districts">STRIKES</div>
-    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center" title="Expiration — shown as Aug 08, 26">EXPIRES</div>
+    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center" title="Favorite's odds (¢) — highest yes price among strikes">PRICE</div>
+    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center" title="Expiration — shown as Aug 08, 26 (settlement; elections occur Nov 03, 26)">EXPIRES</div>
     <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center" title="Total volume $">VOLUME</div>
   </div>
 
@@ -96,8 +97,8 @@ body{background:#fff;color:#121213}
       <li>Guess the secret Kalshi market of the day.</li>
       <li>Pool: <b>sports futures always</b> + <b>single games only if today/live</b> + <b>all politics/business/prices/weather/culture open</b>. House districts are bunched per state — <b>NYHOUSE = New York House Races (custom 2-way D vs R, 2 strikes, shows one district when correct)</b>.</li>
       <li>Six broads: <b>sports</b> · <b>politics</b> (ELECT or HOUSE) · <b>business</b> (TECH/FINANCE/CORP) · <b>prices</b> (crypto/CMDTY only on $) · <b>weather</b> (HEAT/RAIN/HURRICANE) · <b>culture</b> (MUSIC/FILM/TV & CELEB). Abbreviations show as tags: <b>NRSC → Republican</b>.</li>
-      <li>After each guess: <span class="inline-block w-3 h-3 bg-[#6aaa64] align-middle"></span> green = exact, <span class="inline-block w-3 h-3 bg-[#c9b458] align-middle"></span> yellow = close (e.g., market name shares ≥2 words, same region for LOC). Arrows: <b>▲/▼</b> = higher/lower (volume), <b>←/→</b> = earlier/later (dates). <b>LOC</b>=state/country (N/A for prices). <b>EXPIRES</b> as <b>Aug 08, 26</b>.</li>
-      <li><b>STRIKES</b> = #outcomes (custom House bunches like NYHOUSE = 2).</li>
+      <li>After each guess: <span class="inline-block w-3 h-3 bg-[#6aaa64] align-middle"></span> green = exact, <span class="inline-block w-3 h-3 bg-[#c9b458] align-middle"></span> yellow = close (e.g., market name shares ≥2 words, same region for LOC). Arrows: <b>▲/▼</b> = higher/lower (price/volume/strikes), <b>←/→</b> = earlier/later (dates). <b>LOC</b>=state/country (N/A for prices). <b>EXPIRES</b> as <b>Aug 08, 26</b>.</li>
+      <li><b>STRIKES</b> = #outcomes (custom House bunches like NYHOUSE = 2). <b>PRICE</b> = favorite’s odds (¢) — e.g., <b>72¢</b> = favorite at 72¢.</li>
       <li>10 tries. Share copies with a sleek “Copied” toast for 2s.</li>
     </ol>
     <div class="grid grid-cols-3 gap-2 mt-4 text-center text-[11px] font-black tracking-wide">
@@ -426,6 +427,11 @@ async function loadPool(){
     expiration: p.expiration,
     expDay: (p.expiration||"").slice(0,10),
     volume: Number(p.volume)||0,
+    price: Number(p.price)||50,
+    price_ticker: p.price_ticker||"",
+    price_label: p.price_label||"",
+    subtickers: p.subtickers||null,
+    constituents: p.constituents||null,
     ticker: p.ticker,
     event_ticker: p.event_ticker
   }});
@@ -440,6 +446,8 @@ async function loadPool(){
   renderAutocomplete('');
   // log chosen market to server
   logChosen();
+  // grab live favorite price as user opens page — refresh from API, don't rely on stale pool.json
+  refreshLivePrices().catch(()=>{});
 }
 
 async function fetchAllMarketsPaginated(){
@@ -459,6 +467,51 @@ async function fetchAllMarketsPaginated(){
     if(page>=12) break;
   }
   return all;
+}
+async function refreshLivePrices(){
+  try{
+    const BASE="https://api.elections.kalshi.com/trade-api/v2";
+    // fetch a snapshot of markets for price; best-effort, use first 400 markets (covers most favorites)
+    const r=await fetch(`${BASE}/markets?status=open&limit=200`);
+    if(!r.ok) return;
+    const data=await r.json();
+    const map=new Map();
+    for(const m of (data.markets||[])){
+      const bid=parseFloat(m.yes_bid_dollars||0), ask=parseFloat(m.yes_ask_dollars||0), last=parseFloat(m.last_price_dollars||0);
+      let mid=0;
+      if(bid>0&&ask>0) mid=(bid+ask)/2;
+      else if(bid>0) mid=bid;
+      else if(ask>0) mid=ask;
+      else mid=last;
+      const cents=Math.round(mid*100);
+      if(!map.has(m.event_ticker) || cents > (map.get(m.event_ticker).cents||0)){
+        map.set(m.event_ticker,{cents, ticker:m.ticker});
+      }
+    }
+    // update POOL and TARGET live
+    let updated=0;
+    for(const p of POOL){
+      const hit=map.get(p.event_ticker);
+      if(hit && hit.cents>=1 && hit.cents<=99){
+        if(p.price!==hit.cents){ p.price=hit.cents; p.price_ticker=hit.ticker; updated++; }
+      }
+    }
+    if(updated) {
+      // re-render board prices if guesses already made, and keep TARGET in sync
+      for(const g of guesses){
+        const live=POOL.find(x=>x.ticker===g.ticker);
+        if(live) g.price=live.price;
+      }
+      const targetLive=POOL.find(x=>x.ticker===TARGET.ticker);
+      if(targetLive) TARGET.price=targetLive.price;
+      // refresh any already-rendered rows (simple reload of board)
+      const board=document.getElementById('board');
+      if(board && guesses.length){
+        board.innerHTML='';
+        for(const g of guesses) addRow(g,false);
+      }
+    }
+  }catch(e){ console.warn("live price refresh failed",e); }
 }
 async function fetchAllEventsPaginated(){
   const BASE="https://api.elections.kalshi.com/trade-api/v2";
@@ -576,6 +629,13 @@ function feedback(guess, target){
     if(Math.abs(diff)<=2) exp='yellow';
     if(diff<0) eArrow=' →'; else if(diff>0) eArrow=' ←';
   }
+  // price - favorite's odds (¢)
+  let price='gray', pArrow='';
+  const gp=Number(guess.price)||50, tp=Number(target.price)||50;
+  const pd=Math.abs(gp-tp);
+  if(pd===0) price='green'; else if(pd<=5) price='yellow';
+  if(pd>0){ if(gp < tp) pArrow=' ▲'; else if(gp > tp) pArrow=' ▼'; }
+  if(pd===0) pArrow='';
   // volume
   let vol='gray', vArrow='';
   const gv=guess.volume, tv=target.volume;
@@ -597,7 +657,7 @@ function feedback(guess, target){
     for(const w of aSet) if(bSet.has(w)) common++;
     if(common>=2) name='yellow';
   }
-  return {broad, sub, loc, strike, sArrow, exp, eArrow, vol, vArrow, name};
+  return {broad, sub, loc, strike, sArrow, exp, eArrow, vol, vArrow, price, pArrow, name};
 }
 
 function addRow(guess, animate){
@@ -605,7 +665,7 @@ function addRow(guess, animate){
   const fb=feedback(guess, TARGET);
   const board=document.getElementById('board');
   const row=document.createElement('div');
-  row.className='grid grid-cols-[1.5fr_0.5fr_0.55fr_0.5fr_0.4fr_0.6fr_0.55fr] gap-1.5';
+  row.className='grid grid-cols-[1.4fr_0.45fr_0.5fr_0.4fr_0.35fr_0.4fr_0.55fr_0.5fr] gap-1.5';
   if(animate) row.style.opacity='0';
   // for bunched House markets (e.g., NYHOUSE), show specific subticker when guessed correctly
   const isHouseBunch = guess.ticker && guess.ticker.endsWith('HOUSE') && guess.subtickers && guess.subtickers.length;
@@ -633,6 +693,9 @@ function addRow(guess, animate){
     </div>
     <div class="tile ${fb.strike} p-2 flex flex-col items-center justify-center text-center min-h-[64px]">
       <div class="text-[20px] md:text-[22px] font-black mono">${guess.strikes}${fb.sArrow}</div>
+    </div>
+    <div class="tile ${fb.price} p-2 flex flex-col items-center justify-center text-center min-h-[64px]">
+      <div class="text-[15px] md:text-[16px] font-black mono">${(guess.price||50)}¢${fb.pArrow}</div>
     </div>
     <div class="tile ${fb.exp} p-2 flex flex-col items-center justify-center text-center min-h-[64px]">
       <div class="text-[14px] md:text-[15px] font-black mono">${fmtDate(guess.expiration)}${fb.eArrow}</div>
@@ -686,7 +749,7 @@ function shareText(){
   let grid="";
   for(const g of guesses){
     const fb=feedback(g,TARGET);
-    const line=(fb.name==='green'?'🟩':'⬜')+(fb.broad==='green'?'🟩':'⬜')+(fb.sub==='green'?'🟩':fb.sub==='yellow'?'🟨':'⬜')+(fb.strike==='green'?'🟩':fb.strike==='yellow'?'🟨':'⬜')+(fb.exp==='green'?'🟩':fb.exp==='yellow'?'🟨':'⬜')+(fb.vol==='green'?'🟩':fb.vol==='yellow'?'🟨':'⬜');
+    const line=(fb.name==='green'?'🟩':'⬜')+(fb.broad==='green'?'🟩':'⬜')+(fb.sub==='green'?'🟩':fb.sub==='yellow'?'🟨':'⬜')+(fb.strike==='green'?'🟩':fb.strike==='yellow'?'🟨':'⬜')+(fb.price==='green'?'🟩':fb.price==='yellow'?'🟨':'⬜')+(fb.exp==='green'?'🟩':fb.exp==='yellow'?'🟨':'⬜')+(fb.vol==='green'?'🟩':fb.vol==='yellow'?'🟨':'⬜');
     grid+=line+"\n";
   }
   return header+"\n"+grid+"\nkalshi-wordle — "+POOL.length+" events";

@@ -379,6 +379,30 @@ for ev in events:
         vol_sum = sum(float(m.get("volume_fp") or 0) for m in markets)
     if vol_sum==0:
         vol_sum = abs(hash(ev.get("event_ticker","")) % 80000)+5000
+    # favorite price (odds of favorite) — for batched event take max mid-price among strikes
+    fav_price = 50
+    fav_ticker = ""
+    fav_label = ""
+    try:
+        best = -1
+        for mm in markets:
+            bid = float(mm.get("yes_bid_dollars") or 0)
+            ask = float(mm.get("yes_ask_dollars") or 0)
+            last = float(mm.get("last_price_dollars") or 0)
+            mid = 0
+            if bid>0 and ask>0: mid = (bid+ask)/2
+            elif bid>0: mid = bid
+            elif ask>0: mid = ask
+            else: mid = last
+            if mid*100 > best:
+                best = mid*100
+                fav_ticker = mm.get("ticker","")
+                fav_label = mm.get("yes_sub_title","") or mm.get("ticker","")
+        if best>=0:
+            fav_price = int(round(best))
+            if fav_price<1: fav_price=50  # fallback for zero-priced markets
+            if fav_price>99: fav_price=99
+    except: pass
 
     # subcat and category + location — intuitive for normal user, no ++ padding
     if broad=="weather":
@@ -429,6 +453,9 @@ for ev in events:
         "strikes": strikes,
         "expiration": exp,
         "volume": int(vol_sum),
+        "price": fav_price,
+        "price_ticker": fav_ticker,
+        "price_label": fav_label,
         "ticker": ev.get("event_ticker"),
         "event_ticker": ev.get("event_ticker"),
     })
@@ -509,6 +536,14 @@ if house_buckets:
         # intuitive name for normal user
         state_full = {v:k.title() for k,v in STATE_FULL_TO_CODE.items()}.get(state, state)
         name_st = f"{state_full} House Races"
+        # bunched price = volume-weighted avg favorite price of constituents
+        prices = [x.get("price",50) for x in bucket if x.get("price")]
+        vols_w = [x.get("volume",0) or 1 for x in bucket]
+        if prices:
+            wavg = sum(p*w for p,w in zip(prices, vols_w))/sum(vols_w)
+            agg_price = int(round(wavg))
+        else:
+            agg_price = 50
         agg = {
             "name": name_st,
             "broad": "politics",
@@ -519,6 +554,9 @@ if house_buckets:
             "strikes": 2,  # custom bunch is a 2-way race (D vs R), not sum of districts
             "expiration": exp,
             "volume": int(vol_sum),
+            "price": agg_price,
+            "price_ticker": ticker_st,
+            "price_label": "House",
             "ticker": ticker_st,
             "event_ticker": ticker_st,
             "subtickers": [x.get("event_ticker") for x in bucket],  # specific district tickers preserved
