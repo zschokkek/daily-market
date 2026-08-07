@@ -106,6 +106,20 @@ def culture_subcat(ticker, title, subcategory):
     # default based on broad culture: rotate to ensure >=5
     return "MUSIC"
 
+def get_sport_family(sub):
+    s=(sub or "").upper()
+    if any(k in s for k in ["NFL","CFB"]): return "football"
+    if any(k in s for k in ["NBA","WNBA","CBB","BIG3"]): return "basketball"
+    if "MLB" in s: return "baseball"
+    if "NHL" in s: return "hockey"
+    if any(k in s for k in ["SOCCER","MLS","EPL","LEAGUESCUP","UCL","UECL","COPPAITALIA","UEL","COPADOBRASIL","LALIGA","BUNDESLIGA","SERIEA","LIGUE1","CONMEBOL","COPAAMERICA","LEAGUE","CUP"]): return "soccer"
+    if any(k in s for k in ["GOLF","PGA"]): return "golf"
+    if any(k in s for k in ["TENNIS","ATP","WTA"]): return "tennis"
+    if any(k in s for k in ["MMA","UFC","BOXING","WBC"]): return "combat"
+    if any(k in s for k in ["ESPORTS","LOL","CS2"]): return "esports"
+    if any(k in s for k in ["F1","NASCAR","INDYCAR","MOTOGP","RACING"]): return "racing"
+    return s
+
 def sports_subcat(ticker, title, subcategory):
     s=(subcategory or ticker or title or "").upper()
     t=(ticker or "").upper()
@@ -160,7 +174,8 @@ US_STATES = ["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","I
 CITY_TO_STATE = {"NEW YORK":"NY","NYC":"NY","LOS ANGELES":"CA","LA":"CA","CHICAGO":"IL","BOSTON":"MA","PITTSBURGH":"PA","PHILADELPHIA":"PA","TORONTO":"ON","MONTREAL":"QC","MIAMI":"FL","ATLANTA":"GA","SEATTLE":"WA","SAN FRANCISCO":"CA","HOUSTON":"TX","DALLAS":"TX","WASHINGTON":"DC","DETROIT":"MI","CLEVELAND":"OH","DENVER":"CO","PHOENIX":"AZ"}
 STATE_FULL_TO_CODE = {"ALABAMA":"AL","ALASKA":"AK","ARIZONA":"AZ","ARKANSAS":"AR","CALIFORNIA":"CA","COLORADO":"CO","CONNECTICUT":"CT","DELAWARE":"DE","FLORIDA":"FL","GEORGIA":"GA","HAWAII":"HI","IDAHO":"ID","ILLINOIS":"IL","INDIANA":"IN","IOWA":"IA","KANSAS":"KS","KENTUCKY":"KY","LOUISIANA":"LA","MAINE":"ME","MARYLAND":"MD","MASSACHUSETTS":"MA","MICHIGAN":"MI","MINNESOTA":"MN","MISSISSIPPI":"MS","MISSOURI":"MO","MONTANA":"MT","NEBRASKA":"NE","NEVADA":"NV","NEW HAMPSHIRE":"NH","NEW JERSEY":"NJ","NEW MEXICO":"NM","NEW YORK":"NY","NORTH CAROLINA":"NC","NORTH DAKOTA":"ND","OHIO":"OH","OKLAHOMA":"OK","OREGON":"OR","PENNSYLVANIA":"PA","RHODE ISLAND":"RI","SOUTH CAROLINA":"SC","SOUTH DAKOTA":"SD","TENNESSEE":"TN","TEXAS":"TX","UTAH":"UT","VERMONT":"VT","VIRGINIA":"VA","WASHINGTON":"WA","WEST VIRGINIA":"WV","WISCONSIN":"WI","WYOMING":"WY","DISTRICT OF COLUMBIA":"DC"}
 MLB_FULL = {"A'S":"Athletics","ATHLETICS":"Athletics","BOS":"Boston Red Sox","BOSTON":"Boston Red Sox","NYY":"New York Yankees","NYM":"New York Mets","PIT":"Pittsburgh Pirates","PITTSBURGH":"Pittsburgh Pirates","NY":"New York Yankees","TOR":"Toronto Blue Jays","CHC":"Chicago Cubs","CWS":"Chicago White Sox","LAD":"Los Angeles Dodgers","LAA":"Los Angeles Angels","SF":"San Francisco Giants","HOU":"Houston Astros","SEA":"Seattle Mariners","TEX":"Texas Rangers","ATL":"Atlanta Braves","MIA":"Miami Marlins","PHI":"Philadelphia Phillies","WSH":"Washington Nationals","BAL":"Baltimore Orioles","TB":"Tampa Bay Rays","CIN":"Cincinnati Reds","CLE":"Cleveland Guardians","DET":"Detroit Tigers","KC":"Kansas City Royals","MIN":"Minnesota Twins","MIL":"Milwaukee Brewers","STL":"St. Louis Cardinals","CHW":"Chicago White Sox"}
-COUNTRY_KEYS = ["ARGENTINA","BRAZIL","BULGARIA","CAPE VERDE","ESTONIA","FRANCE","GHANA","HUNGARY","MOLDOVA","MONGOLIA","PHILIPPINES","SOUTH KOREA","WORLD","EU","UK","CANADA","MEXICO","GERMANY","JAPAN","KOREA"]
+COUNTRY_KEYS = ["ARGENTINA","BRAZIL","BULGARIA","CAPE VERDE","ESTONIA","FRANCE","GHANA","HUNGARY","MOLDOVA","MONGOLIA","PHILIPPINES","SOUTH KOREA","WORLD","EU","UK","CANADA","MEXICO","GERMANY","JAPAN","KOREA",
+               "ISRAEL","SAUDI ARABIA","SAUDI","QATAR","SYRIA","PANAMA","TAIWAN","NORTH KOREA","KOREA","CHINA","IRAN","RUSSIA","UKRAINE","PALESTINE","GAZA"]
 COMPANY_TO_STATE = {"AMAZON":"WA","APPLE":"CA","GOOGLE":"CA","ALPHABET":"CA","MICROSOFT":"WA","TESLA":"TX","META":"CA","NETFLIX":"CA","NVIDIA":"CA","OPENAI":"CA","CAVA":"DC","MCDONALD'S":"IL","MCDONALDS":"IL","STARBUCKS":"WA","CHIPOTLE":"CA","BOEING":"VA","WALMART":"AR","TARGET":"MN","COSTCO":"WA","FORD":"MI","GM":"MI","EXXON":"TX","CHEVRON":"CA","JPMORGAN":"NY","GOLDMAN":"NY","DISNEY":"CA","COCA-COLA":"GA","PEPSI":"NY","PFIZER":"NY","MODERNA":"MA","UBER":"CA","LYFT":"CA","AIRBNB":"CA","SPOTIFY":"NY"}
 
 def expand_team_name(short):
@@ -551,7 +566,7 @@ for ev in events:
     elif broad=="politics":
         ticker_up = (ev.get("event_ticker","") or "").upper()
         title_up = (ev.get("title") or "").upper()
-        # intuitive buckets: SENATE / HOUSE / GOV / PRES / TRUMP / ELECT — no GOVNY/SENATENY nonsense
+        # intuitive buckets: SENATE / HOUSE / GOV / PRES / TRUMP / ELECT — TRUMP only for direct Trump actions, not "during Trump's term" foreign policy
         if "HOUSE" in ticker_up or "KXHOUSE" in ticker_up:
             pl = "HOUSE"
         elif "SENATE" in title_up or "SENATE" in ticker_up:
@@ -562,7 +577,12 @@ for ev in events:
         elif "PRESIDENT" in title_up or "PRESIDENTIAL" in title_up or ticker_up.startswith("KX2028"):
             pl = "PRES"
         elif "TRUMP" in title_up or "TRUMP" in ticker_up:
-            pl = "TRUMP"
+            # curate: Israel/Saudi/Qatar/Syria/Panama/Taiwan/Kim markets are about foreign countries during his term, not Trump himself
+            FOREIGN_TRUMP = ["ISRAEL","SAUDI","QATAR","SYRIA","PANAMA","TAIWAN","KIM JONG","NORTH KOREA","CHINA","IRAN"]
+            if any(f in title_up for f in FOREIGN_TRUMP):
+                pl = "ELECT"
+            else:
+                pl = "TRUMP"
         else:
             pl = "ELECT"
         sub_for_pool = pl

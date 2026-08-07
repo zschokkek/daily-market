@@ -272,7 +272,7 @@ async function loadPool(){
       else if(broad==="prices"){ let ps=pricesSubcat(m.ticker||"", m.title||"", sub); detail=`Prices · ${ps}`; subForPool=ps; }
       else if(broad==="culture"){ let cs=cultureSubcat(m.ticker||"", m.title||"", sub); detail=`Culture · ${cs}`; subForPool=cs; }
       else if(broad==="business"){ let bs=businessSubcat(m.ticker||"", m.title||"", sub); subForPool=bs; detail = raw ? `${raw} · ${bs}` : `Business · ${bs}`; }
-      else if(broad==="politics"){ const up=(m.ticker||"").toUpperCase(); const tu=(m.title||"").toUpperCase(); let pl="ELECT"; if(up.includes("HOUSE")||up.includes("KXHOUSE")) pl="HOUSE"; else if(tu.includes("SENATE")||up.includes("SENATE")) pl="SENATE"; else if(tu.includes("GOVERNOR")||up.includes("GOV")) pl="GOV"; else if(tu.includes("PRESIDENT")||tu.includes("PRESIDENTIAL")||up.startsWith("KX2028")) pl="PRES"; else if(tu.includes("TRUMP")||up.includes("TRUMP")) pl="TRUMP"; subForPool=pl; detail=`Politics · ${pl}`; }
+      else if(broad==="politics"){ const up=(m.ticker||"").toUpperCase(); const tu=(m.title||"").toUpperCase(); let pl="ELECT"; if(up.includes("HOUSE")||up.includes("KXHOUSE")) pl="HOUSE"; else if(tu.includes("SENATE")||up.includes("SENATE")) pl="SENATE"; else if(tu.includes("GOVERNOR")||up.includes("GOV")) pl="GOV"; else if(tu.includes("PRESIDENT")||tu.includes("PRESIDENTIAL")||up.startsWith("KX2028")) pl="PRES"; else if(tu.includes("TRUMP")||up.includes("TRUMP")){ const foreign=["ISRAEL","SAUDI","QATAR","SYRIA","PANAMA","TAIWAN","KIM JONG","NORTH KOREA","CHINA","IRAN"]; pl= foreign.some(f=>tu.includes(f))?"ELECT":"TRUMP"; } subForPool=pl; detail=`Politics · ${pl}`; }
       else { subForPool=(sub||broad); detail = (raw && subForPool) ? `${raw} · ${subForPool}` : (raw||broad); }
       let vol = m.volume || m.volume_24h || 0;
       vol = Number(vol)||0;
@@ -316,7 +316,7 @@ async function loadPool(){
         else if(broad==="prices"){ let ps=pricesSubcat(mk.ticker||"", name, sub); detail=`Prices · ${ps}`; subFinal=ps; }
         else if(broad==="culture"){ let cs=cultureSubcat(mk.ticker||"", name, sub); detail=`Culture · ${cs}`; subFinal=cs; }
         else if(broad==="business"){ let bs=businessSubcat(mk.ticker||"", name, sub); subFinal=bs; detail=(raw && bs)?`${raw} · ${bs}`: `Business · ${bs}`; }
-        else if(broad==="politics"){ const up=(mk.ticker||"").toUpperCase(); const tu=(name||"").toUpperCase(); let pl="ELECT"; if(up.includes("HOUSE")||up.includes("KXHOUSE")) pl="HOUSE"; else if(tu.includes("SENATE")||up.includes("SENATE")) pl="SENATE"; else if(tu.includes("GOVERNOR")||up.includes("GOV")) pl="GOV"; else if(tu.includes("PRESIDENT")||tu.includes("PRESIDENTIAL")||up.startsWith("KX2028")) pl="PRES"; else if(tu.includes("TRUMP")||up.includes("TRUMP")) pl="TRUMP"; subFinal=pl; detail=`Politics · ${pl}`; }
+        else if(broad==="politics"){ const up=(mk.ticker||"").toUpperCase(); const tu=(name||"").toUpperCase(); let pl="ELECT"; if(up.includes("HOUSE")||up.includes("KXHOUSE")) pl="HOUSE"; else if(tu.includes("SENATE")||up.includes("SENATE")) pl="SENATE"; else if(tu.includes("GOVERNOR")||up.includes("GOV")) pl="GOV"; else if(tu.includes("PRESIDENT")||tu.includes("PRESIDENTIAL")||up.startsWith("KX2028")) pl="PRES"; else if(tu.includes("TRUMP")||up.includes("TRUMP")){ const foreign=["ISRAEL","SAUDI","QATAR","SYRIA","PANAMA","TAIWAN","KIM JONG","NORTH KOREA","CHINA","IRAN"]; pl= foreign.some(f=>tu.includes(f))?"ELECT":"TRUMP"; } subFinal=pl; detail=`Politics · ${pl}`; }
         else { subFinal=(sub||broad); detail=(raw && subFinal)?`${raw} · ${subFinal}`: (raw||broad); }
         livePool.push({name, broad, subcat: subFinal, category:detail, raw_category:raw||broad, strikes, expiration:exp, expDay, volume:Math.round(vol), ticker: mk.ticker||mk.ticker_name||ev.event_ticker, event_ticker: ev.event_ticker});
       }
@@ -378,7 +378,7 @@ async function loadPool(){
     else if(broad==="prices" && (!cat || cat===broad || cat==="prices")){ const ps=pricesSubcat(p.ticker||"", p.name||"", p.subcat||""); cat=`Prices · ${ps}`; sub=ps; }
     else if(broad==="culture" && (!cat || cat===broad || cat==="culture")){ const cs=cultureSubcat(p.ticker||"", p.name||"", p.subcat||""); cat=`Culture · ${cs}`; sub=cs; }
     else if(broad==="business" && (!sub || !cat || cat===broad || cat==="business")){ const bs=businessSubcat(p.ticker||"", p.name||"", p.subcat||""); sub=bs; cat = p.raw_category && p.raw_category!==broad ? `${p.raw_category} · ${bs}` : `Business · ${bs}`; }
-    else if(broad==="politics"){ const up=(p.ticker||"").toUpperCase(); const tu=(p.name||"").toUpperCase(); let pl="ELECT"; if(up.includes("HOUSE")||up.includes("KXHOUSE")) pl="HOUSE"; else if(tu.includes("SENATE")||up.includes("SENATE")) pl="SENATE"; else if(tu.includes("GOVERNOR")||up.includes("GOV")) pl="GOV"; else if(tu.includes("PRESIDENT")||tu.includes("PRESIDENTIAL")||up.startsWith("KX2028")) pl="PRES"; else if(tu.includes("TRUMP")||up.includes("TRUMP")) pl="TRUMP"; sub=pl; cat=`Politics · ${pl}`; }
+    else if(broad==="politics"){ const up=(p.ticker||"").toUpperCase(); const tu=(p.name||"").toUpperCase(); let pl="ELECT"; if(up.includes("HOUSE")||up.includes("KXHOUSE")) pl="HOUSE"; else if(tu.includes("SENATE")||up.includes("SENATE")) pl="SENATE"; else if(tu.includes("GOVERNOR")||up.includes("GOV")) pl="GOV"; else if(tu.includes("PRESIDENT")||tu.includes("PRESIDENTIAL")||up.startsWith("KX2028")) pl="PRES"; else if(tu.includes("TRUMP")||up.includes("TRUMP")){ const foreign=["ISRAEL","SAUDI","QATAR","SYRIA","PANAMA","TAIWAN","KIM JONG","NORTH KOREA","CHINA","IRAN"]; pl= foreign.some(f=>tu.includes(f))?"ELECT":"TRUMP"; } sub=pl; cat=`Politics · ${pl}`; }
     else { sub=(sub||broad); }
     // location: state if USA, country if not, N/A for prices, businesses have state — includes full state names for MA/CA etc.
     let loc=p.location;
@@ -628,16 +628,17 @@ function fmtDate(s){
 
 function getSportFamily(sub){
   const s=(sub||"").toUpperCase();
-  if(["NFL","CFB"].includes(s)) return "football";
-  if(["NBA","WNBA","CBB","BIG3"].includes(s)) return "basketball";
-  if(["MLB"].includes(s)) return "baseball";
-  if(["NHL"].includes(s)) return "hockey";
-  if(["SOCCER","MLS","EPL","LEAGUESCUP","UCL","UECL","COPPAITALIA","UEL","COPADOBRASIL","LALIGA","BUNDESLIGA","SERIEA","LIGUE1","CONMEBOL","COPAAMERICA"].some(k=> s.includes(k))) return "soccer";
-  if(["GOLF","PGA"].includes(s)) return "golf";
-  if(["TENNIS","ATP","WTA","WTAFINALS"].some(k=> s.includes(k))) return "tennis";
-  if(["MMA","UFC","BOXING","WBC"].some(k=> s.includes(k))) return "combat";
-  if(["ESPORTS","LOL","CS2"].some(k=> s.includes(k))) return "esports";
-  if(["F1","NASCAR","INDYCAR","MOTOGP"].some(k=> s.includes(k))) return "racing";
+  // handle bunched NEXTTEAM / JOIN / LEAGUE fragments — map to family via substring so CFB vs NFL still yellow, NBA vs NEXTTEAMNBA yellow
+  if(["NFL","CFB"].includes(s) || s.includes("NFL") || s.includes("CFB")) return "football";
+  if(["NBA","WNBA","CBB","BIG3"].includes(s) || s.includes("NBA") || s.includes("WNBA") || s.includes("CBB")) return "basketball";
+  if(["MLB"].includes(s) || s.includes("MLB")) return "baseball";
+  if(["NHL"].includes(s) || s.includes("NHL")) return "hockey";
+  if(["SOCCER","MLS","EPL","LEAGUESCUP","UCL","UECL","COPPAITALIA","UEL","COPADOBRASIL","LALIGA","BUNDESLIGA","SERIEA","LIGUE1","CONMEBOL","COPAAMERICA"].some(k=> s.includes(k)) || s.includes("SOCCER") || s.includes("LEAGUE") || s.includes("CUP")) return "soccer";
+  if(["GOLF","PGA"].includes(s) || s.includes("GOLF") || s.includes("PGA")) return "golf";
+  if(["TENNIS","ATP","WTA","WTAFINALS"].some(k=> s.includes(k)) || s.includes("TENN") || s.includes("ATP") || s.includes("WTA")) return "tennis";
+  if(["MMA","UFC","BOXING","WBC"].some(k=> s.includes(k)) || s.includes("MMA") || s.includes("UFC")) return "combat";
+  if(["ESPORTS","LOL","CS2"].some(k=> s.includes(k)) || s.includes("ESPORT")) return "esports";
+  if(["F1","NASCAR","INDYCAR","MOTOGP"].some(k=> s.includes(k)) || s.includes("RACING") || s.includes("NASCAR") || s.includes("F1")) return "racing";
   return s; // fallback unique
 }
 function feedback(guess, target){
@@ -935,10 +936,10 @@ function renderAutocomplete(q){
       }
       if(nameWords.has(qtl)) { score+=60; matchedTokens++; continue; }
       if(tags.includes(qtl)) { score+=55; matchedTokens++; continue; }
-      // prefix match for name words (e.g., "superb" -> super)
-      for(const w of nameWords){ if(w.startsWith(qtl) && qtl.length>=3){ score+=30; matchedTokens++; break; } }
+      // prefix match for name words — require >=4 to avoid sec→section/second false positives
+      for(const w of nameWords){ if(w.startsWith(qtl) && qtl.length>=4){ score+=30; matchedTokens++; break; } }
       // also check subcat prefix
-      if(subLower.startsWith(qtl) && qtl.length>=2){ score+=40; matchedTokens++; continue; }
+      if(subLower.startsWith(qtl) && qtl.length>=3){ score+=40; matchedTokens++; continue; }
     }
     // require at least one token matched, and for multi-token queries (super bowl) require both or alias
     const required = raw.split(/\s+/).filter(Boolean).length;
@@ -951,8 +952,17 @@ function renderAutocomplete(q){
     // for super bowl, also consider sb alias as match for both
     if(raw.includes("super") && raw.includes("bowl") && (subLower==="sb"||tickerLower.includes("sb"))) origMatched=origTokens.length;
     if(origMatched < Math.min(origTokens.length, 1)) { /* keep at least 1 */ }
-    // volume tiebreaker small
-    score += Math.log(1 + (p.volume||0))/100;
+    // ranking tweaks: deprioritize niche 2nd/3rd Place Brasil markets, boost winner/nominee
+    const lname=(p.name||"").toLowerCase();
+    if(lname.includes("2nd place")||lname.includes("3rd place")) score-=30;
+    if(lname.includes("brasil")||lname.includes("brazil")){
+      // when query is pres/president, Brazil niche markets should not outrank US PRES
+      if(!raw.toLowerCase().includes("brazil") && !raw.toLowerCase().includes("brasil")){
+        score-=15;
+      }
+    }
+    // volume tiebreaker — increased weight so $57M US PRES beats $14k Brazil 2nd Place
+    score += Math.log(1 + (p.volume||0))/20;
     scored.push({p, score, origMatched});
   }
   // sort by origMatched desc, then score, then volume
