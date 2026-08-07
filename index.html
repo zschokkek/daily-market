@@ -645,7 +645,7 @@ async function pickTarget(){
       const stored=localStorage.getItem(tkKey);
       // also handle date rollover: TODAY_ISO already isolates by date, but server restart on same day should clear guesses
       if(stored && stored!==srvTicker){
-        localStorage.removeItem(idxKey); localStorage.removeItem(tkKey); localStorage.removeItem(guessesKey);
+        localStorage.removeItem(idxKey); localStorage.removeItem(tkKey); localStorage.removeItem(guessesKey); localStorage.removeItem('kalshi-wordle-gaveup-'+TODAY_ISO);
         // also clear any in-memory guesses from previous target
         guesses = [];
         GAVE_UP = false;
@@ -675,7 +675,7 @@ function saveState(){ localStorage.setItem('kalshi-wordle-guesses-'+TODAY_ISO, J
 function restoreState(){
   try{
     const gave=localStorage.getItem('kalshi-wordle-gaveup-'+TODAY_ISO);
-    if(gave==='1') GAVE_UP=true;
+    GAVE_UP = gave==='1';
     const raw=localStorage.getItem('kalshi-wordle-guesses-'+TODAY_ISO);
     if(raw){
       const tickers=JSON.parse(raw);
