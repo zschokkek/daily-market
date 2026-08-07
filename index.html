@@ -45,7 +45,7 @@ body{background:#fff;color:#121213}
       <button id="guess-btn" class="h-[52px] px-7 bg-[#121213] text-white text-[15px] font-black tracking-[0.08em]">GUESS</button>
     </div>
     <div class="flex flex-wrap gap-2 text-[11px] font-bold tracking-wide text-[#787c7e]">
-      <span>10 TRIES</span><span class="text-[#d3d6da]">•</span><span id="tries-left" class="text-[#121213]">10 LEFT</span><span class="text-[#d3d6da]">•</span><span>COLUMNS: NAME · CATEGORY · STRIKES · EXPIRATION · VOLUME</span>
+      <span>10 TRIES</span><span class="text-[#d3d6da]">•</span><span id="tries-left" class="text-[#121213]">10 LEFT</span>
       <button id="giveup" class="ml-auto underline">Give up</button>
     </div>
   </div>
@@ -169,8 +169,10 @@ function sportsSubcat(ticker, title, sub){
   const s=(sub||ticker||title||"").toUpperCase();
   const t=(ticker||"").toUpperCase();
   const tu=(title||"").toUpperCase();
+  if(tu.includes("COLLEGE FOOTBALL")||s.includes("NCAAF")||t.includes("NCAAF")) return "CFB";
+  if(tu.includes("COLLEGE BASKETBALL")||s.includes("NCAAB")||t.includes("NCAAB")||s.includes("NCAAMB")||s.includes("NCAAWB")) return "CBB";
   if(s.includes("KXMLB")||t.includes("KXMLB")||tu.includes("MLB")||tu.includes("BASEBALL")) return "MLB";
-  if(s.includes("KXNFL")||t.includes("KXNFL")||tu.includes("NFL")) return "NFL";
+  if(s.includes("KXNFL")||t.includes("KXNFL")||tu.includes("PRO FOOTBALL")||tu.includes("NFL")) return "NFL";
   if(s.includes("KXNBA")||t.includes("KXNBA")||tu.includes("NBA")&&!tu.includes("WNBA")) return "NBA";
   if(s.includes("KXWNB")||t.includes("KXWNB")||tu.includes("WNBA")) return "WNBA";
   if(s.includes("KXLOL")||t.includes("KXLOL")||tu.includes("LEAGUE OF LEGENDS")) return "Esports";
@@ -603,9 +605,29 @@ function fmtDate(s){
   return `${m} ${day}, ${yr}`;
 }
 
+function getSportFamily(sub){
+  const s=(sub||"").toUpperCase();
+  if(["NFL","CFB"].includes(s)) return "football";
+  if(["NBA","WNBA","CBB","BIG3"].includes(s)) return "basketball";
+  if(["MLB"].includes(s)) return "baseball";
+  if(["NHL"].includes(s)) return "hockey";
+  if(["SOCCER","MLS","EPL","LEAGUESCUP","UCL","UECL","COPPAITALIA","UEL","COPADOBRASIL","LALIGA","BUNDESLIGA","SERIEA","LIGUE1","CONMEBOL","COPAAMERICA"].some(k=> s.includes(k))) return "soccer";
+  if(["GOLF","PGA"].includes(s)) return "golf";
+  if(["TENNIS","ATP","WTA","WTAFINALS"].some(k=> s.includes(k))) return "tennis";
+  if(["MMA","UFC","BOXING","WBC"].some(k=> s.includes(k))) return "combat";
+  if(["ESPORTS","LOL","CS2"].some(k=> s.includes(k))) return "esports";
+  if(["F1","NASCAR","INDYCAR","MOTOGP"].some(k=> s.includes(k))) return "racing";
+  return s; // fallback unique
+}
 function feedback(guess, target){
   let broad = (guess.broad===target.broad) ? 'green' : 'gray';
-  let sub = (guess.subcat===target.subcat) ? 'green' : (guess.broad===target.broad ? 'yellow' : 'gray');
+  let sub;
+  if(guess.subcat===target.subcat) sub='green';
+  else if(guess.broad==="sports" && target.broad==="sports"){
+    // same sport family (football CFB vs NFL) -> yellow, different sport (MLB vs NFL) -> gray
+    sub = (getSportFamily(guess.subcat)===getSportFamily(target.subcat) ? 'yellow' : 'gray');
+  } else if(guess.broad===target.broad) sub='yellow';
+  else sub='gray';
   // location: regions — MA should not be yellow to Boston/US just because same country, only same region
   const regionMap={ "CT":"Northeast","ME":"Northeast","MA":"Northeast","NH":"Northeast","RI":"Northeast","VT":"Northeast","NY":"Northeast","NJ":"Northeast","PA":"Northeast", "IL":"Midwest","IN":"Midwest","MI":"Midwest","OH":"Midwest","WI":"Midwest","IA":"Midwest","KS":"Midwest","MN":"Midwest","MO":"Midwest","NE":"Midwest","ND":"Midwest","SD":"Midwest", "DE":"South","FL":"South","GA":"South","MD":"South","NC":"South","SC":"South","VA":"South","DC":"South","WV":"South","AL":"South","KY":"South","MS":"South","TN":"South","AR":"South","LA":"South","OK":"South","TX":"South", "AZ":"West","CA":"West","CO":"West","HI":"West","ID":"West","MT":"West","NV":"West","NM":"West","OR":"West","UT":"West","WA":"West","WY":"West","AK":"West" };
   let loc='gray';
@@ -778,14 +800,84 @@ function logGuess(outcome){
 const input=document.getElementById('guess-input');
 const ac=document.getElementById('autocomplete');
 function renderAutocomplete(q){
-  const query=(q||'').trim().toLowerCase();
-  if(!query){ ac.classList.add('hidden'); ac.innerHTML=''; return; }
+  const raw=(q||'').trim().toLowerCase();
+  if(!raw){ ac.classList.add('hidden'); ac.innerHTML=''; return; }
   if(!POOL.length){ ac.classList.add('hidden'); return; }
-  const filtered=POOL.filter(p=> {
-    if(guesses.some(g=>g.ticker===p.ticker)) return false;
-    const tags=getAbbrTags(p.ticker,p.name).join(" ").toLowerCase();
-    return p.name.toLowerCase().includes(query) || p.ticker.toLowerCase().includes(query) || p.broad.toLowerCase().includes(query) || (p.subcat||'').toLowerCase().includes(query) || tags.includes(query) || tags.split(" ").some(t=> t.includes(query));
-  }).slice(0,14);
+  // alias expansion for intuitive searches — deep pass for abbreviations
+  const aliasTokens=(s)=>{
+    const t=s.toLowerCase().trim();
+    if(t==="super bowl"||t==="superbowl"||t==="super bowls") return ["sb","super bowl"];
+    if(t==="nfl"||t==="pro football"||t==="football") return ["nfl","football"];
+    if(t==="nba"||t==="pro basketball") return ["nba"];
+    if(t==="mlb") return ["mlb"];
+    if(t==="cfb"||t==="college football"||t==="college fb") return ["cfb","college football"];
+    if(t==="cbb"||t==="college basketball"||t==="college bb"||t==="ncaab") return ["cbb","college basketball"];
+    if(t==="nhl") return ["nhl"];
+    if(t==="wnba") return ["wnba"];
+    if(t==="f1") return ["f1"];
+    if(t==="ufc"||t==="mma") return ["ufc","mma"];
+    if(t==="pga"||t==="golf") return ["golf","pga"];
+    if(t==="atp"||t==="tennis") return ["tennis","atp"];
+    if(t==="nfl ") return ["nfl"];
+    return [];
+  };
+  const queryTokens=raw.split(/\s+/).filter(Boolean);
+  const expanded=[...queryTokens, ...aliasTokens(raw)];
+  // also if raw contains super+ bowl, add sb
+  if(raw.includes("super") && raw.includes("bowl") && !expanded.includes("sb")) expanded.push("sb","super bowl");
+  const wordSet=(s)=> new Set((s||"").toLowerCase().split(/[^a-z0-9]+/).filter(Boolean));
+  const scored=[];
+  for(const p of POOL){
+    if(guesses.some(g=>g.ticker===p.ticker)) continue;
+    const nameWords=wordSet(p.name);
+    const subLower=(p.subcat||"").toLowerCase();
+    const broadLower=(p.broad||"").toLowerCase();
+    const tickerLower=(p.ticker||"").toLowerCase();
+    const tags=getAbbrTags(p.ticker,p.name).map(t=>t.toLowerCase());
+    let score=0;
+    let matchedTokens=0;
+    for(const qt of expanded){
+      const qtl=qt.toLowerCase();
+      if(!qtl) continue;
+      // exact subcat match — highest priority (nfl -> NFL, sb -> SB)
+      if(subLower===qtl) { score+=100; matchedTokens++; continue; }
+      if(broadLower===qtl) { score+=90; matchedTokens++; continue; }
+      if(tickerLower.includes(qtl) && qtl.length>=2) {
+        // for ticker, allow substring but require at least 2 chars and not inside larger word without boundary for short queries
+        // nfl should match KXNFL* but not be penalized for inflation false positive — ticker check is safe
+        // for name, we already do word equality below, so inflation won't match nfl
+        score+=70; matchedTokens++; continue;
+      }
+      if(nameWords.has(qtl)) { score+=60; matchedTokens++; continue; }
+      if(tags.includes(qtl)) { score+=55; matchedTokens++; continue; }
+      // prefix match for name words (e.g., "superb" -> super)
+      for(const w of nameWords){ if(w.startsWith(qtl) && qtl.length>=3){ score+=30; matchedTokens++; break; } }
+      // also check subcat prefix
+      if(subLower.startsWith(qtl) && qtl.length>=2){ score+=40; matchedTokens++; continue; }
+    }
+    // require at least one token matched, and for multi-token queries (super bowl) require both or alias
+    const required = raw.split(/\s+/).filter(Boolean).length;
+    // for super bowl (2 tokens), we added sb alias, so matchedTokens >=1 is enough if alias hit
+    if(matchedTokens===0) continue;
+    // bonus for matching all original query tokens as words
+    const origTokens=queryTokens;
+    let origMatched=0;
+    for(const ot of origTokens){ if(nameWords.has(ot) || subLower===ot || broadLower===ot || tags.includes(ot) || tickerLower.includes(ot)) origMatched++; }
+    // for super bowl, also consider sb alias as match for both
+    if(raw.includes("super") && raw.includes("bowl") && (subLower==="sb"||tickerLower.includes("sb"))) origMatched=origTokens.length;
+    if(origMatched < Math.min(origTokens.length, 1)) { /* keep at least 1 */ }
+    // volume tiebreaker small
+    score += Math.log(1 + (p.volume||0))/100;
+    scored.push({p, score, origMatched});
+  }
+  // sort by origMatched desc, then score, then volume
+  scored.sort((a,b)=> b.origMatched - a.origMatched || b.score - a.score || (b.p.volume||0)-(a.p.volume||0));
+  const filtered=scored.slice(0,14).map(x=>x.p);
+  // fallback: if no scored but raw is 2-3 chars, try prefix scan
+  if(!filtered.length && raw.length>=2){
+    const fallback=POOL.filter(p=> !guesses.some(g=>g.ticker===p.ticker) && (p.subcat||"").toLowerCase().startsWith(raw) ).slice(0,14);
+    if(fallback.length) { filtered.push(...fallback); }
+  }
   if(!filtered.length){ ac.classList.add('hidden'); ac.innerHTML=''; return; }
   ac.innerHTML=filtered.map(p=> {
     const tags=getAbbrTags(p.ticker,p.name);

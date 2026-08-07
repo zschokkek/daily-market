@@ -110,9 +110,14 @@ def sports_subcat(ticker, title, subcategory):
     s=(subcategory or ticker or title or "").upper()
     t=(ticker or "").upper()
     tu=(title or "").upper()
+    # intuitive abbreviations — over-tagged fix: College Football -> CFB, CBB, Pro Football -> NFL
+    if "COLLEGE FOOTBALL" in tu or "NCAAF" in s or "NCAAF" in t:
+        return "CFB"
+    if "COLLEGE BASKETBALL" in tu or "NCAAB" in s or "NCAAB" in t or "NCAAMB" in s or "NCAAWB" in s:
+        return "CBB"
     if "KXMLB" in s or "KXMLB" in t or "MLB" in tu or "BASEBALL" in tu:
         return "MLB"
-    if "KXNFL" in s or "KXNFL" in t or "NFL" in tu:
+    if "KXNFL" in s or "KXNFL" in t or "PRO FOOTBALL" in tu or "NFL" in tu:
         return "NFL"
     if "KXNBA" in s or "KXNBA" in t or ("NBA" in tu and "WNBA" not in tu):
         return "NBA"
