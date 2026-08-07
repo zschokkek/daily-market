@@ -151,7 +151,8 @@ function toBroad(rawCat, sub, ticker, title){
   let isPrice=false;
   const titleTicker=(ticker+" "+title);
   if(titleTicker.includes("$") || low.includes("target price") || low.includes("price of")) isPrice=true;
-  else if(low.includes("price") && ["above","below","close","target"].some(k=> low.includes(k))) isPrice=true;
+  else if(low.includes("price") && ["above","below","close","target","average hourly"].some(k=> low.includes(k))) isPrice=true;
+  else if(["nvidia","h100","h200","b200","rtx 5090","rtx5090","blackwell"].some(k=> low.includes(k)) && low.includes("price")) isPrice=true;
   else if(["btc","bitcoin","eth ","ethereum","sol ","solana","xrp","doge","crypto"].some(k=> low.includes(k)) && ["above","below","price","close","$"].some(k=> low.includes(k))) isPrice=true;
   else if(["s&p","nasdaq"].some(k=> low.includes(k)) && ["above","below","close","$","price"].some(k=> low.includes(k))) isPrice=true;
   else if(["crude oil","gold price","silver price","corn price","wheat price"].some(k=> low.includes(k)) && ["price","$","above","below"].some(k=> low.includes(k))) isPrice=true;
@@ -384,6 +385,41 @@ async function loadPool(){
         livePool=nonHouse;
       }
     }
+    // bunch NVIDIA hourly price markets by chip: 22 → 4 (H100/H200/B200/RTX5090) — mirrors pool.json
+    {
+      const nvBuckets={}; const nvRem=[];
+      for(const p of livePool){
+        const tk=((p.event_ticker||p.ticker||"").toUpperCase());
+        const nameUp=(p.name||"").toUpperCase();
+        let isNv = p.broad==="prices" && p.subcat==="CMDTY" && nameUp.includes("NVIDIA") && nameUp.includes("HOURLY PRICE");
+        if(!isNv && p.broad==="prices" && ["H100MS","H200MS","B200MS","RTX5090MS"].some(k=> tk.includes(k))) isNv=true;
+        if(isNv){
+          let chip=null;
+          if(tk.includes("H100MS")) chip="H100";
+          else if(tk.includes("H200MS")) chip="H200";
+          else if(tk.includes("B200MS")) chip="B200";
+          else if(tk.includes("RTX5090")) chip="RTX 5090";
+          if(chip){ if(!nvBuckets[chip]) nvBuckets[chip]=[]; nvBuckets[chip].push(p); continue; }
+        }
+        nvRem.push(p);
+      }
+      if(Object.keys(nvBuckets).length){
+        livePool=nvRem;
+        const chipMap={"H100":"KXH100MS","H200":"KXH200MS","B200":"KXB200MS","RTX 5090":"KXRTX5090MS"};
+        for(const [chip,bucket] of Object.entries(nvBuckets)){
+          const vol=bucket.reduce((s,x)=> s+(x.volume||0),0);
+          const cnt={}; bucket.forEach(x=> cnt[x.strikes]=(cnt[x.strikes]||0)+1);
+          let strikes=bucket[0].strikes, mx=0; for(const k in cnt){ if(cnt[k]>mx){ mx=cnt[k]; strikes=Number(k); } }
+          const exps=bucket.map(x=> x.expiration).filter(Boolean).sort();
+          const exp=exps[0]||bucket[0].expiration;
+          const wavg = bucket.reduce((s,x)=> s + (x.price||50)*(x.volume||1),0) / bucket.reduce((s,x)=> s+(x.volume||1),0);
+          const price=Math.round(wavg);
+          const ticker=chipMap[chip]||("NV"+chip.replace(/\s/g,""));
+          const name=`NVIDIA ${chip} · Average hourly price`;
+          livePool.push({name, broad:"prices", subcat:"CMDTY", category:"Prices · CMDTY", raw_category:"Financials", location:"N/A", strikes, expiration:exp, expDay:exp.slice(0,10), volume:Math.round(vol), price, price_ticker:ticker, price_label:chip, ticker, event_ticker:ticker, subtickers: bucket.map(x=> x.event_ticker||x.ticker), constituents: bucket.length});
+        }
+      }
+    }
     if(livePool.length>=5){
       // use live if we got a real pool
       // keep fallback merge? no, live is truth
@@ -449,9 +485,11 @@ async function loadPool(){
         if(!found){
           // smart: everything in US should have state, national politics -> DC
           if(broad==="business"){
-            const compMap={"AMAZON":"WA","APPLE":"CA","GOOGLE":"CA","ALPHABET":"CA","MICROSOFT":"WA","TESLA":"TX","META":"CA","NETFLIX":"CA","NVIDIA":"CA","OPENAI":"CA","CAVA":"DC","MCDONALD'S":"IL","MCDONALDS":"IL","STARBUCKS":"WA","CHIPOTLE":"CA","BOEING":"VA","WALMART":"AR","TARGET":"MN","COSTCO":"WA","FORD":"MI","GM":"MI","EXXON":"TX","CHEVRON":"CA","JPMORGAN":"NY","GOLDMAN":"NY","DISNEY":"CA","COCA-COLA":"GA","PEPSI":"NY","PFIZER":"NY","MODERNA":"MA","UBER":"CA","LYFT":"CA","AIRBNB":"CA","SPOTIFY":"NY"};
-            for(const [comp,st] of Object.entries(compMap)){ if(text.includes(comp)){ found=st; break; } }
+            if(["BANK","LEAD"].some(k=> text.includes(k)) && text.includes("IPO")) found="NY";
+            const compMap={"AMAZON":"WA","APPLE":"CA","GOOGLE":"CA","ALPHABET":"CA","MICROSOFT":"WA","TESLA":"TX","META":"CA","NETFLIX":"CA","NVIDIA":"CA","OPENAI":"CA","ANTHROPIC":"CA","CAVA":"DC","MCDONALD'S":"IL","MCDONALDS":"IL","STARBUCKS":"WA","CHIPOTLE":"CA","BOEING":"VA","WALMART":"AR","TARGET":"MN","COSTCO":"WA","FORD":"MI","GM":"MI","EXXON":"TX","CHEVRON":"CA","JPMORGAN":"NY","GOLDMAN":"NY","DISNEY":"CA","COCA-COLA":"GA","PEPSI":"NY","PFIZER":"NY","MODERNA":"MA","UBER":"CA","LYFT":"CA","AIRBNB":"CA","SPOTIFY":"NY"};
+            if(!found){ for(const [comp,st] of Object.entries(compMap)){ if(comp==="ANTHROPIC" && ["BANK","LEAD","FINANCE"].some(k=> text.includes(k))) continue; if(text.includes(comp)){ found=st; break; } } }
             if(!found && ["HOUSE","SENATE","PRESIDENT","CONTROL","GOVERNOR","MAYOR","CONGRESS"].some(k=> text.includes(k))) found="DC";
+            if(!found && ["LAW","LEGISLATION","BILL","BAN","RESTRICTION","REGULATION"].some(k=> text.includes(k)) && ["AI","LLM","TECH"].some(k=> text.includes(k))) found="DC";
             if(!found && ["TECH","AI","AGI","SOFTWARE"].some(k=> text.includes(k))) found="CA";
             if(!found && ["BANK","FINANCE","MARKET"].some(k=> text.includes(k))) found="NY";
             if(!found) found="DC";
@@ -762,6 +800,7 @@ function feedback(guess, target){
   }
   // market name: green if exact, yellow if shares ≥2 meaningful words (e.g., "total restaurant" → yellow, ignore will/the/with)
   // DETAIL already captures sport/league (NFL/CFB/CBB etc), so sport words alone should not count toward MARKET yellow
+  // Business QoL: single company name overlap (e.g., NVIDIA H100 vs B200, Tesla vs Tesla) should be yellow
   let name = 'gray';
   if (guess.ticker===target.ticker) name='green';
   else {
@@ -775,6 +814,12 @@ function feedback(guess, target){
     let common=0;
     for(const w of aSet) if(bSet.has(w)) common++;
     if(common>=2) name='yellow';
+    // business: same company name → yellow (even single word overlap like NVIDIA or Tesla)
+    if(name!=='yellow' && guess.broad==="business" && target.broad==="business"){
+      const companyKeys=["amazon","apple","google","alphabet","microsoft","tesla","spacex","meta","netflix","nvidia","openai","anthropic","cava","mcdonald","starbucks","chipotle","boeing","walmart","target","costco","ford","gm","exxon","chevron","jpmorgan","goldman","disney","coca","pepsi","pfizer","moderna","uber","lyft","airbnb","spotify","nvidia","blackwell"];
+      const lowA=(guess.name+" "+(guess.ticker||"")).toLowerCase(), lowB=(target.name+" "+(target.ticker||"")).toLowerCase();
+      for(const k of companyKeys){ if(lowA.includes(k) && lowB.includes(k)){ name='yellow'; break; } }
+    }
   }
   return {broad, sub, loc, lArrow, strike, sArrow, exp, eArrow, vol, vArrow, price, pArrow, name};
 }

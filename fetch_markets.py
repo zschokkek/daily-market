@@ -61,7 +61,9 @@ def to_broad(category, subcategory, ticker, title):
     is_price = False
     if "$" in (ticker+" "+title) or "target price" in low or "price of" in low:
         is_price = True
-    elif "price" in low and any(k in low for k in ["above","below","close","target"]):
+    elif "price" in low and any(k in low for k in ["above","below","close","target","average hourly"]):
+        is_price = True
+    elif any(k in low for k in ["nvidia","h100","h200","b200","rtx 5090","rtx5090","blackwell"]) and "price" in low:
         is_price = True
     elif any(k in low for k in ["btc","bitcoin","eth ","ethereum","sol ","solana","xrp","doge","crypto"]) and any(k in low for k in ["above","below","price","close","$"]):
         is_price = True
@@ -176,7 +178,7 @@ STATE_FULL_TO_CODE = {"ALABAMA":"AL","ALASKA":"AK","ARIZONA":"AZ","ARKANSAS":"AR
 MLB_FULL = {"A'S":"Athletics","ATHLETICS":"Athletics","BOS":"Boston Red Sox","BOSTON":"Boston Red Sox","NYY":"New York Yankees","NYM":"New York Mets","PIT":"Pittsburgh Pirates","PITTSBURGH":"Pittsburgh Pirates","NY":"New York Yankees","TOR":"Toronto Blue Jays","CHC":"Chicago Cubs","CWS":"Chicago White Sox","LAD":"Los Angeles Dodgers","LAA":"Los Angeles Angels","SF":"San Francisco Giants","HOU":"Houston Astros","SEA":"Seattle Mariners","TEX":"Texas Rangers","ATL":"Atlanta Braves","MIA":"Miami Marlins","PHI":"Philadelphia Phillies","WSH":"Washington Nationals","BAL":"Baltimore Orioles","TB":"Tampa Bay Rays","CIN":"Cincinnati Reds","CLE":"Cleveland Guardians","DET":"Detroit Tigers","KC":"Kansas City Royals","MIN":"Minnesota Twins","MIL":"Milwaukee Brewers","STL":"St. Louis Cardinals","CHW":"Chicago White Sox"}
 COUNTRY_KEYS = ["ARGENTINA","BRAZIL","BULGARIA","CAPE VERDE","ESTONIA","FRANCE","GHANA","HUNGARY","MOLDOVA","MONGOLIA","PHILIPPINES","SOUTH KOREA","WORLD","EU","UK","CANADA","MEXICO","GERMANY","JAPAN","KOREA",
                "ISRAEL","SAUDI ARABIA","SAUDI","QATAR","SYRIA","PANAMA","TAIWAN","NORTH KOREA","KOREA","CHINA","IRAN","RUSSIA","UKRAINE","PALESTINE","GAZA"]
-COMPANY_TO_STATE = {"AMAZON":"WA","APPLE":"CA","GOOGLE":"CA","ALPHABET":"CA","MICROSOFT":"WA","TESLA":"TX","META":"CA","NETFLIX":"CA","NVIDIA":"CA","OPENAI":"CA","CAVA":"DC","MCDONALD'S":"IL","MCDONALDS":"IL","STARBUCKS":"WA","CHIPOTLE":"CA","BOEING":"VA","WALMART":"AR","TARGET":"MN","COSTCO":"WA","FORD":"MI","GM":"MI","EXXON":"TX","CHEVRON":"CA","JPMORGAN":"NY","GOLDMAN":"NY","DISNEY":"CA","COCA-COLA":"GA","PEPSI":"NY","PFIZER":"NY","MODERNA":"MA","UBER":"CA","LYFT":"CA","AIRBNB":"CA","SPOTIFY":"NY"}
+COMPANY_TO_STATE = {"AMAZON":"WA","APPLE":"CA","GOOGLE":"CA","ALPHABET":"CA","MICROSOFT":"WA","TESLA":"TX","META":"CA","NETFLIX":"CA","NVIDIA":"CA","OPENAI":"CA","ANTHROPIC":"CA","CAVA":"DC","MCDONALD'S":"IL","MCDONALDS":"IL","STARBUCKS":"WA","CHIPOTLE":"CA","BOEING":"VA","WALMART":"AR","TARGET":"MN","COSTCO":"WA","FORD":"MI","GM":"MI","EXXON":"TX","CHEVRON":"CA","JPMORGAN":"NY","GOLDMAN":"NY","DISNEY":"CA","COCA-COLA":"GA","PEPSI":"NY","PFIZER":"NY","MODERNA":"MA","UBER":"CA","LYFT":"CA","AIRBNB":"CA","SPOTIFY":"NY"}
 
 def expand_team_name(short):
     up=short.strip().upper()
@@ -349,11 +351,21 @@ def get_location(event_ticker, title, broad, raw_cat, subcategory):
             return c.title()
     # 6. business: try company HQ else DC for national US business
     if broad=="business":
+        # finance (bank/lead IPO) should be NY even for CA companies like Anthropic
+        if any(k in text for k in ["BANK","LEAD"]) and "IPO" in text:
+            return "NY"
         for comp, st in COMPANY_TO_STATE.items():
             if comp in text:
+                # ANTHROPIC IPO-lead bank market is finance, not company HQ
+                if comp == "ANTHROPIC" and any(k in text for k in ["BANK","LEAD","FINANCE"]):
+                    continue
                 return st
         # national business still needs a state per spec - default to most common business states
         if any(k in text for k in ["HOUSE","SENATE","PRESIDENT","CONTROL","GOVERNOR","MAYOR","CONGRESS"]):
+            return "DC"
+        # AI law exception: federal AI legislation/bans should be DC/NY not default CA (anthropic is CA unless its about laws)
+        if any(k in text for k in ["LAW","LEGISLATION","BILL","BAN","RESTRICTION","REGULATION"]) and any(k in text for k in ["AI","LLM","TECH"]):
+            # New York already handled via STATE_FULL above, so federal -> DC
             return "DC"
         # generic US business -> try to infer from title keywords, else CA (tech) or NY (finance)
         if any(k in text for k in ["TECH","AI","AGI","SOFTWARE"]):
@@ -791,6 +803,68 @@ for p in pool:
 
 if mov_buckets or vot_buckets:
     pool = remaining
+    # Bunch NVIDIA hourly GPU price markets by chip: 22 monthly → 4 (H100/H200/B200/RTX 5090)
+    # Keeps chip guessable but removes month lottery. Mirrors HOUSE bunch logic.
+    NV_CHIP_BUCKETS = {}  # chip -> list
+    nv_remaining = []
+    for p in pool:
+        tk = (p.get("event_ticker") or p.get("ticker") or "").upper()
+        name_up = (p.get("name") or "").upper()
+        is_nv_price = p.get("broad")=="prices" and p.get("subcat")=="CMDTY" and "NVIDIA" in name_up and "HOURLY PRICE" in name_up
+        # also catch via ticker family as fallback
+        if not is_nv_price and p.get("broad")=="prices" and any(k in tk for k in ("H100MS","H200MS","B200MS","RTX5090MS")):
+            is_nv_price = True
+        if is_nv_price:
+            if "H100MS" in tk:
+                chip = "H100"
+            elif "H200MS" in tk:
+                chip = "H200"
+            elif "B200MS" in tk:
+                chip = "B200"
+            elif "RTX5090MS" in tk or "RTX5090" in tk:
+                chip = "RTX 5090"
+            else:
+                # unknown NV chip — don't bunch
+                nv_remaining.append(p)
+                continue
+            NV_CHIP_BUCKETS.setdefault(chip, []).append(p)
+        else:
+            nv_remaining.append(p)
+    if NV_CHIP_BUCKETS:
+        pool = nv_remaining
+        for chip, bucket in NV_CHIP_BUCKETS.items():
+            vol_sum = sum(x.get("volume",0) for x in bucket)
+            strikes_mode = _coll.Counter(x.get("strikes",9) for x in bucket).most_common(1)[0][0]
+            # earliest expiration keeps temporal clue (next month), like HOUSE Nov 03
+            exps = sorted([x.get("expiration","") for x in bucket if x.get("expiration")])
+            exp = exps[0] if exps else bucket[0].get("expiration","")
+            prices = [x.get("price",50) for x in bucket if x.get("price")]
+            vols_w = [x.get("volume",0) or 1 for x in bucket]
+            wavg = sum(p*w for p,w in zip(prices, vols_w))/sum(vols_w) if prices else 50
+            agg_price = int(round(wavg))
+            # series ticker for chip
+            chip_ticker_map = {"H100":"KXH100MS","H200":"KXH200MS","B200":"KXB200MS","RTX 5090":"KXRTX5090MS"}
+            ticker_st = chip_ticker_map.get(chip, f"NV{chip.replace(' ','')}")
+            name_st = f"NVIDIA {chip} · Average hourly price"
+            agg = {
+                "name": name_st,
+                "broad": "prices",
+                "subcat": "CMDTY",
+                "category": "Prices · CMDTY",
+                "raw_category": "Financials",
+                "location": "N/A",
+                "strikes": int(strikes_mode),
+                "expiration": exp,
+                "volume": int(vol_sum),
+                "price": agg_price,
+                "price_ticker": ticker_st,
+                "price_label": chip,
+                "ticker": ticker_st,
+                "event_ticker": ticker_st,
+                "subtickers": [x.get("event_ticker") for x in bucket],
+                "constituents": len(bucket),
+            }
+            pool.append(agg)
     for state, bucket in mov_buckets.items():
         vol_sum = sum(x.get("volume",0) for x in bucket)
         # strikes stays same: mode (most common), not sum — margin typically 9
