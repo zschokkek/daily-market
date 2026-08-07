@@ -409,6 +409,14 @@ async function loadPool(){
               if(text.includes(conf)){ found=st; break; }
             }
           }
+          // college team -> state (Ole Miss -> MS etc) — must be after conference so team overrides conference
+          if(!found){
+            const collegeMap={"OLE MISS":"MS","MISSISSIPPI":"MS","MISSISSIPPI STATE":"MS","ALABAMA":"AL","AUBURN":"AL","GEORGIA":"GA","GEORGIA TECH":"GA","FLORIDA":"FL","FLORIDA STATE":"FL","MIAMI":"FL","UCF":"FL","LSU":"LA","LOUISIANA STATE":"LA","TEXAS":"TX","TEXAS A&M":"TX","TEXAS TECH":"TX","BAYLOR":"TX","TCU":"TX","TENNESSEE":"TN","VANDERBILT":"TN","OHIO STATE":"OH","OHIO":"OH","MICHIGAN":"MI","MICHIGAN STATE":"MI","PENN STATE":"PA","PENN":"PA","NOTRE DAME":"IN","INDIANA":"IN","PURDUE":"IN","OKLAHOMA":"OK","OKLAHOMA STATE":"OK","CLEMSON":"SC","SOUTH CAROLINA":"SC","OREGON":"OR","OREGON STATE":"OR","USC":"CA","UCLA":"CA","STANFORD":"CA","CALIFORNIA":"CA","WASHINGTON":"WA","WASHINGTON STATE":"WA","WISCONSIN":"WI","MINNESOTA":"MN","IOWA":"IA","ILLINOIS":"IL","NORTHWESTERN":"IL","NEBRASKA":"NE","KANSAS":"KS","KANSAS STATE":"KS","KENTUCKY":"KY","LOUISVILLE":"KY","NORTH CAROLINA":"NC","DUKE":"NC","NC STATE":"NC","WAKE FOREST":"NC","VIRGINIA":"VA","VIRGINIA TECH":"VA","ARIZONA":"AZ","ARIZONA STATE":"AZ","COLORADO":"CO","UTAH":"UT","BYU":"UT","MISSOURI":"MO"};
+            for(const [college,st] of Object.entries(collegeMap)){
+              const esc=college.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+              if(new RegExp(`\\b${esc}\\b`).test(text)){ found=st; break; }
+            }
+          }
         }
         if(!found){
           const countries=["ARGENTINA","BRAZIL","BULGARIA","CAPE VERDE","ESTONIA","FRANCE","GHANA","HUNGARY","MOLDOVA","MONGOLIA","PHILIPPINES","SOUTH KOREA","WORLD","EU","UK","CANADA","MEXICO","GERMANY","JAPAN","KOREA"];

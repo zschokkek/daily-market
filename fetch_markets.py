@@ -254,6 +254,36 @@ def get_location(event_ticker, title, broad, raw_cat, subcategory):
                     else:
                         continue
                 return st
+        # college team -> state (so Ole Miss Regular Season Wins -> MS, not generic US)
+        COLLEGE_TO_STATE = {
+            "OLE MISS": "MS", "MISSISSIPPI": "MS", "MISSISSIPPI STATE": "MS",
+            "ALABAMA": "AL", "AUBURN": "AL",
+            "GEORGIA": "GA", "GEORGIA TECH": "GA",
+            "FLORIDA": "FL", "FLORIDA STATE": "FL", "MIAMI": "FL", "UCF": "FL",
+            "LSU": "LA", "LOUISIANA STATE": "LA",
+            "TEXAS": "TX", "TEXAS A&M": "TX", "TEXAS TECH": "TX", "BAYLOR": "TX", "TCU": "TX",
+            "TENNESSEE": "TN", "VANDERBILT": "TN",
+            "OHIO STATE": "OH", "OHIO": "OH",
+            "MICHIGAN": "MI", "MICHIGAN STATE": "MI",
+            "PENN STATE": "PA", "PENN": "PA",
+            "NOTRE DAME": "IN", "INDIANA": "IN", "PURDUE": "IN",
+            "OKLAHOMA": "OK", "OKLAHOMA STATE": "OK",
+            "CLEMSON": "SC", "SOUTH CAROLINA": "SC",
+            "OREGON": "OR", "OREGON STATE": "OR",
+            "USC": "CA", "UCLA": "CA", "STANFORD": "CA", "CALIFORNIA": "CA",
+            "WASHINGTON": "WA", "WASHINGTON STATE": "WA",
+            "WISCONSIN": "WI", "MINNESOTA": "MN", "IOWA": "IA", "ILLINOIS": "IL", "NORTHWESTERN": "IL",
+            "NEBRASKA": "NE", "KANSAS": "KS", "KANSAS STATE": "KS",
+            "KENTUCKY": "KY", "LOUISVILLE": "KY",
+            "NORTH CAROLINA": "NC", "DUKE": "NC", "NC STATE": "NC", "WAKE FOREST": "NC",
+            "VIRGINIA": "VA", "VIRGINIA TECH": "VA",
+            "ARIZONA": "AZ", "ARIZONA STATE": "AZ",
+            "COLORADO": "CO", "UTAH": "UT", "BYU": "UT",
+            "MISSOURI": "MO",
+        }
+        for college, st in COLLEGE_TO_STATE.items():
+            if re.search(r'\b' + re.escape(college) + r'\b', text):
+                return st
     # 5. country
     for c in COUNTRY_KEYS:
         if c in text:
