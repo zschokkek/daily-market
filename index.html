@@ -54,7 +54,7 @@ body{background:#fff;color:#121213}
   <!-- mobile-only scroll: desktop stays 720px grid, mobile (≤640px) gets horizontal swipe with min-width -->
   <div class="max-[640px]:overflow-x-auto max-[640px]:-mx-3 max-[640px]:px-3 max-[640px]:pb-2">
     <div class="max-[640px]:min-w-[640px]">
-      <div class="grid grid-cols-[1.4fr_0.65fr_0.5fr_0.48fr_0.35fr_0.4fr_0.55fr_0.5fr] gap-1.5 px-1">
+      <div class="grid grid-cols-[1.4fr_0.65fr_0.55fr_0.48fr_0.35fr_0.4fr_0.55fr_0.5fr] gap-1.5 px-1">
         <div class="text-[11px] font-black tracking-[0.14em] text-[#121213]" title="Market name (e.g., New York House Races)">MARKET</div>
         <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center" title="Broad: sports · politics · business · prices · weather · culture">CATEGORY</div>
         <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center" title="League / sub-market: MLB, NFL, CBB, SENATE, HOUSE, GOV, PRES, TRUMP, ISRAEL/BRAZIL etc for international (ELECT→country tag), TECH, CMDTY… — International DETAIL yellow = both non-US">DETAIL</div>
@@ -973,7 +973,7 @@ function addRow(guess, animate){
   // give-up reveal is green again (was gray) — minimalist give-up indication is in the result card + subtle row badge below
   const board=document.getElementById('board');
   const row=document.createElement('div');
-  row.className='grid grid-cols-[1.4fr_0.65fr_0.5fr_0.48fr_0.35fr_0.4fr_0.55fr_0.5fr] gap-1.5';
+  row.className='grid grid-cols-[1.4fr_0.65fr_0.55fr_0.48fr_0.35fr_0.4fr_0.55fr_0.5fr] gap-1.5';
   if(animate) row.style.opacity='0';
   // for bunched House markets (e.g., NYHOUSE), show specific subticker when guessed correctly
   const isHouseBunch = guess.ticker && guess.ticker.endsWith('HOUSE') && guess.subtickers && guess.subtickers.length;
