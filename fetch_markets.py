@@ -99,24 +99,20 @@ def business_subcat(ticker, title, subcategory):
     return "CORP"
 
 def culture_subcat(ticker, title, subcategory):
+    # ignore stale pool labels when re-normalizing on client
+    if subcategory in ("TV","CELEB","TV & CELEB","FILM","MUSIC"):
+        subcategory = ""
     low=(ticker+" "+title+" "+(subcategory or "")).lower()
-    # FILM first — Oscar/film must be FILM, not TV & CELEB via 'winner'
-    if any(k in low for k in ["oscar","film","movie","cinema","box office"]):
+    # FILM first — Oscar/film must be FILM, not TV via 'winner'
+    if any(k in low for k in ["oscar","film","movie","cinema","box office","rotten"]):
         return "FILM"
-    # TV shows first — Big Brother, White Lotus, Bachelor etc were defaulting to MUSIC incorrectly
-    if any(k in low for k in ["tv","television","show","series","season","cast","winner","elimination","celeb","kardashian","emmy","netflix","hbo","big brother","bachelor","white lotus","dancing with the stars","stranger things","lotus"]):
-        # but Grammy/Music winners should stay MUSIC, not TV — check music first if grammy/album
-        if any(k in low for k in ["grammy","album","song","spotify","billboard","spotify"]):
-            # e.g., Grammy winner: Album of the Year should be MUSIC, not TV
-            if "grammy" in low or "billboard" in low or "spotify" in low:
-                return "MUSIC"
-        return "TV & CELEB"
-    if any(k in low for k in ["music","song","album","grammy","spotify"]):
-        return "MUSIC"  # 5 letters
-    if any(k in low for k in ["film","movie","cinema","oscar","box office"]):
-        return "FILM"  # 4 letters but padded to meet 5? user wants FILM exactly, we'll keep FILM and pad display
-    # default based on broad culture: Entertainment with no music/film/tv keywords -> TV & CELEB (more intuitive than MUSIC for reality TV)
-    return "TV & CELEB"
+    if any(k in low for k in ["music","song","album","grammy","spotify","billboard","coachella","rolling loud","eurovision","reputation","harry styles"]):
+        return "MUSIC"
+    # TV — show-specific (keep narrow: generic season/show leaks to CELEB like Monet auction 'this season')
+    if any(k in low for k in ["tv","television","emmy","netflix","hbo","big brother","bachelor","white lotus","dancing with the stars","stranger things","love island","elder scrolls","game awards","iron man","kimmel","dune"]):
+        return "TV"
+    # default CELEB — engagements, most-searched, Kardashian, auctions, etc.
+    return "CELEB"
 
 def get_sport_family(sub):
     s=(sub or "").upper()

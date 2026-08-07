@@ -1,269 +1,269 @@
-KXGAMEAWARDS-2026 | culture | DC | The Game Awards: 2026 Game of the Year
-KXBOXING-26SEP19FMAYMPAC | sports | US | Mayweather vs Pacquiao
-CONTROLH-2026 | politics | DC | Which party will win the U.S. House?
-KXHURCTOT-26DEC01 | weather | World | How many Atlantic hurricanes will there be in 2026?
-SENATEGA-26 | politics | GA | Georgia Senate winner?
-KXRANKLISTGOOGLESEARCH-26DEC | culture | DC | #1 searched person on Google in 2026
-KXOSCARNOMACTR-27 | culture | CA | Oscar nominees: Best Actress
-KXTESLASEMI-27JAN | business | TX | How many Semi Trucks will Tesla Produce in a quarter in 2026?
-KXNYCSTAT-GROC29 | politics | DC | How many N.Y.C. Groceries stores will open before 2029?
-KXATP-26USO | sports | US | US Open Men's Singles Winner
-KXGDPYEAR-34 | business | DC | US real GDP growth in 2034?
-GOVPARTYOK-26 | politics | OK | Oklahoma Governor winner?
-KXMLBALROTY-26 | sports | US | AL Rookie of the Year Winner?
-VAHOUSE | politics | VA | Virginia House Races
-KXINXY-26DEC31H1600 | prices | N/A | S&P close price end of 2026?
-KXFEDGOVNOM-27 | politics | DC | Who will be nominated as a Fed Governor in 2026?
-KXUFCBANTAMWEIGHTTITLE-26 | sports | US | Bantamweight Title Holder on Dec 31, 2026?
-KXFEDDECISION-27JAN | business | DC | Fed decision in Jan 2027?
-KXEARNINGSMENTIONCAVA-26AUG11 | business | DC | What will Cava say during their next earnings call?
-KXNBAEAST-27 | sports | US | Pro Basketball Eastern Conference Champion
-KXESVI | culture | DC | When will Elder Scrolls VI be released?
-KXMLBGAME-26AUG071845CINWSH | sports | WA | Cincinnati vs Washington
-MIVOTETURN | politics | MI | Michigan House Turnout
-KXTOPSONGRUNNERUPUSA-26 | culture | DC | #2 Song on Spotify U.S. in 2026?
-KXRT-AVE | culture | DC | Avengers: Doomsday: Rotten Tomatoes score
-KXGOVMNNOMR-26 | politics | MN | Minnesota Republican Governor nominee?
-KX2028RRUN-28 | politics | DC | Who will run for the 2028 Republican presidential nomination?
-KXPERFORMBONDSONG-35 | culture | DC | Next James Bond film: Artist performing the James Bond Theme
-KXMLBGAME-26AUG072145TBSEA | sports | WA | Tampa Bay vs Seattle
-KXNCAAFPLAYOFF-26 | sports | US | College Football Playoff Qualifiers
-KXNASCARCUPSERIES-NCS26 | sports | US | NASCAR Cup Series Champion
-KXOPENTOKEND-26AUG31 | business | CA | OpenAI average token price on Aug 31, 2026
-KXMLBNLROTY-26 | sports | US | NL Rookie of the Year Winner?
 KXWNBA-26 | sports | US | Women's Pro Basketball Champion
-KXEMMYCOUNT-26DTF | culture | CA | How many Emmys will 'DTF St. Louis ' win?
-GOVPARTYAL-26 | politics | AL | Alabama Governor winner?
-ILVOTETURN | politics | IL | Illinois House Turnout
-KXMLBWINS-NYM-26 | sports | NY | New York M pro baseball wins this season?
-SENATEAK-26 | politics | AK | Alaska Senate winner?
-KXHEISMAN-27 | sports | US | College Football Heisman Trophy Winner
-KXOSCARNOMDIR-27 | culture | CA | Oscar nominees: Best Director
-KXRATECUTCOUNT-26DEC31 | business | DC | Number of rate cuts in 2026?
-KXRONI-27AUG | weather | World | What will the peak RONI value be during the 2026-27 El Niño season?
-KXTOPALBUMSPOTIFYUSA-26 | culture | DC | Top Album on Spotify U.S in 2026?
-KXNFLNFCWEST-27 | sports | US | NFC West Division Winner
-KXPUTINDJTLOCATION-29 | business | DC | Where will Trump and Putin next meet?
-KXLEAGUESCUPTOTAL-26AUG13CRACHI | sports | IL | Cruz Azul vs Chicago Fire: Total Goals
-KXNFLAFCCHAMP-27 | sports | US | AFC Championship Winner
-KXMLBGAME-26AUG072140HOUSD | sports | TX | Houston vs San Diego
-KXYOUA-28JANMEM | business | DC | Clear active clear+ members in 2026
-KXULTAA-27MARCOMP | business | DC | Ulta comparable sales in fiscal 2026
-DCHOUSE | politics | DC | District Of Columbia House Races
-KXTOPAI-27 | business | CA | Which companies will have a top-ranked AI model this year?
-KXMUSICREPORT-TOPSALE27DEC31 | culture | DC | Top U.S. Selling Album (Physical and Digital Sales Combined): 2026
-KXPRESNOMR-28 | politics | DC | 2028 Republican presidential nominee
-KXINSURRECTION-29 | politics | DC | Will Trump invoke the Insurrection Act?
-KXTOPARTIST-26B | culture | DC | Top artist on Spotify in 2026?
-KXFEDDECISION-26OCT | business | DC | Fed decision in Oct 2026?
-KXMLBNL-26 | sports | US | National League Champion
-KXGDPYEAR-33 | business | DC | US real GDP growth in 2033?
+KXFEDDECISION-26DEC | business | DC | Fed decision in Dec 2026?
+CONTROLH-2026 | politics | DC | Which party will win the U.S. House?
+KXRT-AVE | culture | DC | Avengers: Doomsday: Rotten Tomatoes score
+SENATEGA-26 | politics | GA | Georgia Senate winner?
 KXOSCARACTO-27 | culture | CA | Oscar Winner: Best Actor
-KXOSCARPIC-27 | culture | CA | Oscar Winner: Best Picture
-KXNFLSEED-27AFC6 | sports | US | Pro Football Playoffs: AFC #6 Seed
-KXUCL-27 | sports | US | Champions League Winner
-USCLIMATE | weather | World | US meets its climate goals?
-KXAAAGASMAX-26DEC31 | business | DC | How high will US gas prices get in 2026?
-KXNCAAFAPRANK-26W7R1 | sports | US | College Football: #1 Ranked Team on Week 7 AP Poll
-KXGREENTERRITORY-29 | politics | DC | Will the US take control of any part of Greenland?
-KXMAPRIMARY-01D26 | politics | MA | MA-01 Democratic nominee?
-KXBTCY-27JAN0100 | prices | N/A | Bitcoin price at the end of 2026
-KXWSMA-27MARCOMP | business | DC | Williams-Sonoma total comparable brand growth in fiscal 2026
-KXDDR5WS-26AUG14 | business | DC | DDR5 16Gb (2Gx8) 4800/5600 · price on Aug 14 (Week 33)
-GOVPARTYFL-26 | politics | FL | Florida Governor winner?
-KXMLBALWEST-26 | sports | US | AL West Division Winner
-KXFED-27APR | business | DC | Fed funds rate after Apr 2027 meeting?
-KXGOVAK-26 | politics | AK | Alaska Governor winner? (Person)
-KXOSCARNOMINTERFILM-27 | culture | CA | Oscar nominees: Best International Feature Film
-KXSB-27 | sports | US | 2027 Pro Football Champion
-KXPFAPOY-2526 | sports | US | PFA Player of the Year?
-KXVANCOUVERMAYOR-26OCT17 | politics | Canada | Vancouver mayoral election winner?
-KXNEXTTEAMNBA-26ADAVIS23 | sports | US | Anthony Davis's Next Team
-KXMLBNLCENT-26 | sports | US | NL Central Division Winner
-KXPRESPARTY-2028 | politics | DC | 2028 Presidential Election winner? (Party)
-KXNFLAFCWEST-27 | sports | US | AFC West Division Winner
-KXFEDERALCHARGE-27JAN01 | politics | DC | Who will be charged with a federal crime in 2026?
-KXMLBGAME-26AUG071910LAAMIA | sports | CA | Los Angeles A vs Miami
-KXETHMAXY-27JAN01 | business | DC | How high will Ethereum get in 2026?
+KXTOPALBUMSPOTIFYUSA-26 | culture | DC | Top Album on Spotify U.S in 2026?
 KXWTIMAX-26DEC31 | business | DC | How high will oil (WTI) get by Dec 31, 2026?
-KXMLBWINS-SEA-26 | sports | WA | Seattle pro baseball wins this season?
-GOVPARTYTX-26 | politics | TX | Texas Governor winner?
-KXCODINGMODEL-26DEC | business | CA | Which AI company will have the best coding model at the end of 2026?
-KXRUGBYNRLMATCH-26AUG13PENSYD | sports | US | Penrith Panthers vs Sydney Roosters
-KXNFLTSPEC-27LAC | sports | CA | Los Angeles C: Team Specials
+KXBURNHAMOUT-26JUL | politics | UK | Andy Burnham announces departure as Prime Minister?
+KXMLBALCPOTY-26 | sports | US | AL Comeback Player of the Year Winner?
+KXUSACOMPANYSTAKE-27JAN01 | business | DC | Which companies will the US take a stake in this year?
+CTMOV | politics | CT | Connecticut House Margin
+KXMLBNLCENT-26 | sports | US | NL Central Division Winner
+MAVOTETURN | politics | MA | Massachusetts House Turnout
+KXNASCARCUPSERIES-NCS26 | sports | US | NASCAR Cup Series Champion
+GOVPARTYMN-26 | politics | MN | Minnesota Governor winner?
+KXNCAAFPLAYOFF-26 | sports | US | College Football Playoff Qualifiers
+KXMTCHA-28JANPAYERS | business | DC | Match total payers in 2026
+EVSHARE-30JAN | weather | World | EV market share in 2030?
+KXUPONLY-01 | culture | DC | UpOnly podcast: Guests this year
+KXMLBGAME-26AUG071845CINWSH | sports | WA | Cincinnati vs Washington
+KXMLBAL-26 | sports | US | American League Champion
+SENATEKS-26 | politics | KS | Kansas Senate winner?
+KXMLBWINS-NYM-26 | sports | NY | New York M pro baseball wins this season?
+KXATP-26USO | sports | US | US Open Men's Singles Winner
+NCVOTETURN | politics | NC | North Carolina House Turnout
+KXSENATEMND-26 | politics | MN | Minnesota Democratic Senate nominee?
+WIVOTETURN | politics | WI | Wisconsin House Turnout
+KXBIGBROTHERRANK-26DEC31R2 | culture | DC | Big Brother Season 28 · 2nd place
+KXNFLAFCWEST-27 | sports | US | AFC West Division Winner
+KXMLBNL-26 | sports | US | National League Champion
+KXRTX5090MS | prices | N/A | NVIDIA RTX 5090 · Average hourly price
+KXIMFTWEETS-26AUG13 | business | DC | How many IMF posts on X this week?
+KXMLBNLROTY-26 | sports | US | NL Rookie of the Year Winner?
 KXTOPSONGSPOTIFY-26 | culture | DC | Top Song on Spotify in 2026?
-KXWNBAWORSTREC-26 | sports | US | Women's Pro Basketball Worst Record
-KXEARNINGSMENTIONDPZ-26OCT15 | business | DC | What will Dominos say during their next earnings call?
-KXVENEZUELALEADER-26DEC31 | politics | Venezuela | Who will officially lead Venezuela at the end of 2026?
+SDMOV | politics | SD | South Dakota House Margin
+ILVOTETURN | politics | IL | Illinois House Turnout
+KXHEISMAN-27 | sports | US | College Football Heisman Trophy Winner
+VAVOTETURN | politics | VA | Virginia House Turnout
+KXOAIHARDWARE-27 | business | CA | What kind of device will Jony Ive and OpenAI announce?
+KXOSCARSUPACTR-27 | culture | CA | Oscar Winner: Best Supporting Actress
+KXGDPYEAR-33 | business | DC | US real GDP growth in 2033?
+NHVOTETURN | politics | NH | New Hampshire House Turnout
+KXSEXYMAN-26 | culture | DC | People's Sexiest Man Alive for 2026
+KXCRWVA-27FEBPOWER | business | DC | CoreWeave contracted power capacity in fiscal 2026
+KXOKTA-26AUGCUST100K | prices | N/A | Okta customers with acv over $100k in Q2
+KXBOXING-26SEP19FMAYMPAC | sports | US | Mayweather vs Pacquiao
+KXTOPARTIST-26B | culture | DC | Top artist on Spotify in 2026?
+KXNFLAFCCHAMP-27 | sports | US | AFC Championship Winner
+KXMLBWINS-SEA-26 | sports | WA | Seattle pro baseball wins this season?
+KXGDPYEAR-29 | business | DC | US real GDP growth in 2029?
+DCHOUSE | politics | DC | District Of Columbia House Races
+KXSPACEXCOUNT-26AUG | business | DC | How many launches will SpaceX have in August?
+KXRT-ONS | culture | DC | Onslaught · Rotten Tomatoes score
+KXPRESNOMR-28 | politics | DC | 2028 Republican presidential nominee
+KXPRESPARTY-2028 | politics | DC | 2028 Presidential Election winner? (Party)
+KXTESLASEMI-27JAN | business | TX | How many Semi Trucks will Tesla Produce in a quarter in 2026?
+KXNFLNFCWEST-27 | sports | US | NFC West Division Winner
+USCLIMATE | weather | World | US meets its climate goals?
+KXCPLMATCH-26AUG132000GAWJAM | sports | US | Jamaica Kingsmen vs Guyana Amazon Warriors
+KXETHMAXY-27JAN01 | business | DC | How high will Ethereum get in 2026?
+KXDDR5EWS-26AUG14 | business | DC | DDR5 16Gb (2Gx8) eTT · price on Aug 14 (Week 33)
+KXMDTA-27JUNCARDGROW | business | DC | Medtronic cardiovascular organic growth in fiscal 2027
+KXOSCARPIC-27 | culture | CA | Oscar Winner: Best Picture
+ALMOV | politics | AL | Alabama House Margin
+KXMUSICREPORT-TOPCDSALE27DEC31 | culture | DC | Top U.S. Selling CD Album: 2026
+KXFEDDECISION-26SEP | business | DC | Fed decision in Sep 2026?
+KXGREENTERRITORY-29 | politics | DC | Will the US take control of any part of Greenland?
+KXGERELECTION-29MAR25 | politics | Germany | Next German federal election winner?
+KXNYTRESTAURANTS-27 | culture | NY | Top 10 Restaurants in New York City: 2027
+KXOPUS48OY-27 | business | DC | How low will the Claude Opus 4.8 output token price get in 2026?
+KXRANKLISTGOOGLESEARCHTOP5-26DEC | culture | DC | Top 5 most searched people on Google in 2026
+CAHOUSE | politics | CA | California House Races
+KXMLBGAME-26AUG071910LAAMIA | sports | CA | Los Angeles A vs Miami
+KXSB-27 | sports | US | 2027 Pro Football Champion
+KXNCAAFSEED-27S1 | sports | US | College Football Playoff: #1 Seed
+KXRANKLISTGOOGLESEARCH-26DEC | culture | DC | #1 searched person on Google in 2026
+KXINXY-26DEC31H1600 | prices | N/A | S&P close price end of 2026?
+KXTROPSTORM-26DEC01 | weather | World | Number of tropical storms in the Atlantic in 2026?
+KXNFLSEED-27AFC7 | sports | US | Pro Football Playoffs: AFC #7 Seed
+GOVPARTYVT-26 | politics | VT | Vermont Governor winner?
+KXMLBALROTY-26 | sports | US | AL Rookie of the Year Winner?
+KXMLBALWEST-26 | sports | US | AL West Division Winner
+GOVPARTYTX-26 | politics | TX | Texas Governor winner?
+KXPLL-26 | sports | US | Premier Lacrosse League Championship Winner
+KXFEDERALCHARGE-27JAN01 | politics | DC | Who will be charged with a federal crime in 2026?
+KXNBAEAST-27 | sports | US | Pro Basketball Eastern Conference Champion
+KXCODINGMODEL-26DEC | business | CA | Which AI company will have the best coding model at the end of 2026?
+KXMELIA-28JANITEMS | business | DC | MercadoLibre items sold in 2026
+KXOSCARNOMACTO-27 | culture | CA | Oscar nominees: Best Actor
+PAVOTETURN | politics | PA | Pennsylvania House Turnout
+KXCRYPTORETURNY-26 | business | DC | Which of these cryptocurrencies will have a positive return in 2026?
+KXRATECUTCOUNT-26DEC31 | business | DC | Number of rate cuts in 2026?
+KXMUSICREPORT-TOPDIGSALE27DEC31 | culture | DC | Top U.S. Selling Digital Song: 2026
+KXOSCARNOMACTR-27 | culture | CA | Oscar nominees: Best Actress
 KXVENUEPERFORMANCESPHERE-28JAN01 | culture | DC | Who will perform at Las Vegas Sphere in 2027?
-KXOSCARDIR-27 | culture | CA | Oscar Winner: Best Director
-KXWAYMOCITY-26DEC | business | DC | Where will Waymo operate in 2026?
+KXETHY-27JAN0100 | prices | N/A | Ethereum price at the end of 2026
+KXVENEZUELALEADER-26DEC31 | politics | Venezuela | Who will officially lead Venezuela at the end of 2026?
+KXDG-26AUGSSSG | business | DC | Dollar General same-store sales growth in Q2
+KXAAAGASMAX-26DEC31 | business | DC | How high will US gas prices get in 2026?
 KXBIGBROTHER-26DEC31 | culture | DC | Big Brother Season 28 · Winner
-GOVPARTYMI-26 | politics | MI | Michigan Governor winner?
-KXLLM1-26AUG31 | business | CA | Best AI in Aug 2026?
-KXAAAGASMAXCA-26DEC31 | business | CA | How high will gas prices in California get this year?
+KXMLBGAME-26AUG072140HOUSD | sports | TX | Houston vs San Diego
+KSVOTETURN | politics | KS | Kansas House Turnout
+KXOPENTOKEND-26AUG14 | business | CA | OpenAI average token price on Aug 14, 2026
+KXFED-27APR | business | DC | Fed funds rate after Apr 2027 meeting?
 KXCHESSWORLDCHAMPION-CHESS26 | sports | World | FIDE World Chess Championship 2026 Winner
 KXBRPRES-26 | politics | Brazil | Brazil Presidential election winner?
-KXRTCOMPARE-INS26AUG24 | culture | DC | Insidious vs Mutiny: Highest Rotten Tomatoes Score
-WAHOUSE | politics | WA | Washington House Races
+KXNASDAQ100MINY-26DEC31H1600 | business | DC | How low will the Nasdaq-100 get in 2026?
+KXPFAPOY-2526 | sports | US | PFA Player of the Year?
+KXISRAELPM-26OCT27 | politics | Israel | Prime Minister of Israel after the 2026 election?
 KXNCAAF-27 | sports | US | College Football National Championship Winner
 CONTROLS-2026 | politics | DC | Which party will win the U.S. Senate?
 KXVPRESNOMD-28 | politics | DC | 2028 Democratic VP nominee
-KXNYCSTAT-CONG26 | politics | NY | Manhattan congestion-zone vehicle entries in 2026?
+KXEOTRUMPTERM-29JAN20 | politics | DC | How many executive orders will Trump sign in his second term?
 KXNHL-27 | sports | US | 2026-27 Stanley Cup® Finals Winner
-KXNFLTSPEC-27NO | sports | US | New Orleans: Team Specials
-KXFEDDECISION-26SEP | business | DC | Fed decision in Sep 2026?
-KXNASDAQ100Y-26DEC31H1600 | prices | N/A | Nasdaq-100 close price end of 2026?
+KXBNBMINMON-BNB-26AUG31 | business | DC | How low will BNB get in August?
+KXSTARTINGQBWEEK1-26SEP15MIN | sports | MN | Minnesota Week 1 Starting Quarterback
+KXOAIANTH-40 | business | CA | Will OpenAI or Anthropic IPO first?
 SENATEME-26 | politics | ME | Maine Senate winner?
-KXVOGUECOVER-27 | culture | DC | Vogue (US) 2026: Cover Models
+KXMLBGAME-26AUG072145TBSEA | sports | WA | Tampa Bay vs Seattle
+KXNASDAQ100Y-26DEC31H1600 | prices | N/A | Nasdaq-100 close price end of 2026?
 KXSCOURT-29 | politics | DC | Who will be the next Supreme Court justice?
-WIVOTETURN | politics | WI | Wisconsin House Turnout
+CTVOTETURN | politics | CT | Connecticut House Turnout
 SENATENE-26 | politics | NE | Nebraska Senate winner?
 KXDHOUSESEATS-27 | politics | DC | How many House seats will Democrats hold after the Midterms?
-KXEBOLACOUNTRY-27 | business | DC | Which countries will report an Ebola case in 2026?
-KXUSACOMPANYSTAKE-27JAN01 | business | DC | Which companies will the US take a stake in this year?
-KXSPACEXCOUNT-26AUG | business | DC | How many launches will SpaceX have in August?
-KYVOTETURN | politics | KY | Kentucky House Turnout
-KXDDR5MS-27MAR | business | DC | DDR5 16Gb (2Gx8) 4800/5600 · Average price in March 2027
-MNVOTETURN | politics | MN | Minnesota House Turnout
+KXROLEATEVENTROLLING-27DEC31 | culture | FL | Who will headline Rolling Loud Miami 2026?
+KXEMERCUTS-26 | business | DC | Number of emergency rate cuts in 2026?
+KXUCL-27 | sports | US | Champions League Winner
+KXLEAGUESCUPTOTAL-26AUG12LAFCQUE | sports | CA | Los Angeles F vs Queretaro: Total Goals
+KXFRENCHPRES-27 | politics | France | Next French presidential election winner?
+KXFEDDECISION-27JUN | business | DC | Fed decision in Jun 2027?
+KXPRIMEENGCONSUMPTION-30 | weather | World | What will be the largest source of global primary energy consumption in 2030?
 WRECSS-26 | business | DC | Which countries will have a recession before 2027?
-KXOSCARNOMMAKEUP-27 | culture | CA | Oscar nominees: Best Makeup and Hairstyling
-KXBNBMINMON-BNB-26AUG31 | business | DC | How low will BNB get in August?
 KXNEXTTEAMNBA-26BJAMES9 | sports | US | Bronny James' Next Team Before Oct 23, 2026
-KXOSCARSUPACTO-27 | culture | CA | Oscar winner: Best Supporting Actor
+KXOSCARNOMDIR-27 | culture | CA | Oscar nominees: Best Director
 GOVPARTYOH-26 | politics | OH | Ohio Governor winner?
 KXRHOUSESEATS-27 | politics | DC | How many House seats will Republicans hold after the Midterms?
-KXLEAGUESCUPTOTAL-26AUG12SEACDG | sports | WA | Seattle vs Guadalajara: Total Goals
+KXNFL1SEED-AFC26 | sports | US | Pro Football: AFC #1 Seed
 KXMLBALEAST-26 | sports | US | AL East Division Winner
-KXUST7A-26AUG14 | business | DC | 7Y US Treasury yield on Aug 14, 2026?
+KXMDT-26SEPCARDGROW | business | DC | Medtronic cardiovascular organic growth in Q1
 KXNFLNFCCHAMP-27 | sports | US | NFC Championship Winner
 KXMLBNLEAST-26 | sports | US | NL East Division Winner
-KXOAIANTH-40 | business | CA | Will OpenAI or Anthropic IPO first?
-KXHURRICANENAMES-26DEC01CPAC | weather | World | What named storms will be hurricanes in the Central Pacific this year?
-MIHOUSE | politics | MI | Michigan House Races
-KXNEXTTEAMNBA-26KLEONARD2 | sports | US | Kawhi Leonard's Next Team
-KXNCAAMBIVY-27 | sports | NJ | Ivy League Men's Conference Tournament Champion
+KXNEXTTEAMNBA-26ADAVIS23 | sports | US | Anthony Davis's Next Team
+CAVOTETURN | politics | CA | California House Turnout
 KXNEXTROMANIAPM-45JAN01 | politics | Romania | Who will be the next new Prime Minister of Romania?
-KXYOU-26NOVMEM | business | DC | Clear+ members in Q3
+KXNEXTTEAMNBA-26KLEONARD2 | sports | US | Kawhi Leonard's Next Team
+KXNFLTSPEC-27LAC | sports | CA | Los Angeles C: Team Specials
+KXTXGLO-26 | politics | TX | Texas Land Commissioner winner?
+KXLLM1-26AUG31 | business | CA | Best AI in Aug 2026?
+KXCPLMATCH-26AUG141900ANTSTL | sports | US | St. Lucia Kings vs Antigua And Barbuda Falcons
 KXNFLCPOTY-27 | sports | US | Comeback Player of the Year Winner
-SENATESC-26 | politics | SC | South Carolina Senate winner?
-KXNEXTTRILLIONAIRE-33 | business | World | Who will be the world's second trillionaire?
-KXOPENAISECTOR-XX | business | CA | What sector will OpenAI be assigned to?
-KXMTCHA-28JANPAYERS | business | DC | Match total payers in 2026
-KXNEWPOPE-70 | politics | Vatican | Who will the next Pope be?
-NCHOUSE | politics | NC | North Carolina House Races
-KXWT20MATCH-26AUG200930CENSOU | sports | US | South Delhi Superstars vs Central Delhi Queens
-KXCRYPTORETURNY-26 | business | DC | Which of these cryptocurrencies will have a positive return in 2026?
+KXGOVMNNOMR-26 | politics | MN | Minnesota Republican Governor nominee?
+KXSTARSHIPSPACE-26 | business | DC | How many SpaceX Starship launches will reach space in 2026?
+KXULTA-26DECCOMP | business | DC | Ulta comparable sales in Q3
+KXOSCARNOMMAKEUP-27 | culture | CA | Oscar nominees: Best Makeup and Hairstyling
+SENATEFLS-26 | politics | FL | Florida Senate winner?
+KXUNSEC-27JAN | politics | DC | Who will be the next UN Secretary-General?
+KXINDYCARRACE-FREEDOM26 | sports | WA | Freedom 250 Grand Prix of Washington Winner
+KXEBOLACOUNTRY-27 | business | DC | Which countries will report an Ebola case in 2026?
 KXBALLONDOR-26 | sports | US | Who will win the Ballon d'Or in 2026?
 KXGOVWINOMD-26 | politics | WI | Wisconsin Democratic Governor nominee?
-KXDDR5MS-27MAY | business | DC | DDR5 16Gb (2Gx8) 4800/5600 · Average price in May 2027
-KXOAIHARDWARE-27 | business | CA | What kind of device will Jony Ive and OpenAI announce?
+KXCBDECISIONNZ-26SEP01 | business | NY | Reserve Bank of New Zealand rate decision in September 
+KXTOPAI-27 | business | CA | Which companies will have a top-ranked AI model this year?
 KXGREENLANDPRICE-29JAN21 | politics | DC | How much will the US acquire Greenland for?
 KXU3MAX-27 | business | DC | How high will unemployment get in 2026?
-FLVOTETURN | politics | FL | Florida House Turnout
+NYVOTETURN | politics | NY | New York House Turnout
 KXPRESPERSON-28 | politics | DC | 2028 U.S. Presidential Election winner?
-KXTROPSTORM-26DEC01 | weather | World | Number of tropical storms in the Atlantic in 2026?
-KXALBUMRELEASEDATE-NEWFUTURE | culture | DC | When will Future a release new album?
-KXAAPLPRICEFOLD-27 | prices | N/A | What will be the price of a foldable iPhone?
-KXMLBGAME-26AUG071940MINMIL | sports | MN | Minnesota vs Milwaukee
+KXRONI-27AUG | weather | World | What will the peak RONI value be during the 2026-27 El Niño season?
+KXFUSION | business | DC | When will nuclear fusion be achieved?
+KXH200MS | prices | N/A | NVIDIA H200 · Average hourly price
+KXMLBGAME-26AUG071840NYMPIT | sports | NY | New York M vs Pittsburgh Pirates
 KXLLM1-26DEC31 | business | CA | Best AI at the end of 2026?
-KXGOLDDIRY-26DEC31H1700 | prices | N/A | Gold price at year end?
+KXSOLD26-27JAN0100 | prices | N/A | Price of Solana by end of 2026?
 KXNEXTTEAMNBA-26SCUR | sports | US | Steph Curry's Next Team
 SENATENC-26 | politics | NC | North Carolina Senate winner?
-KXIRANEMBASSY-27 | politics | Iran | Will the US reopen its embassy in Iran?
-KXCONGRESSTESTIFY-27JAN | politics | DC | Who will testify in front of Congress in 2026?
+KXGOLDDIRY-26DEC31H1700 | prices | N/A | Gold price at year end?
+KXNYCSTAT-CONG26 | politics | NY | Manhattan congestion-zone vehicle entries in 2026?
 KX2028DRUN-28 | politics | DC | Who will run for the Democratic presidential nomination in 2028?
-KXMLBGAME-26AUG071840NYMPIT | sports | NY | New York M vs Pittsburgh Pirates
-KXLEAGUESCUPSPREAD-26AUG12SEACDG | sports | WA | Seattle vs Guadalajara: Spread
+KXMLBGAME-26AUG071940MINMIL | sports | MN | Minnesota vs Milwaukee
+KXLEAGUESCUPSPREAD-26AUG12SDPUE | sports | US | San Diego FC vs Puebla: Spread
 KXNCAAFB12-26 | sports | TX | College Football Big 12 Championship Winner
-KXBIGBROTHERRANK-26DEC31R2 | culture | DC | Big Brother Season 28 · 2nd place
+KXOSCARDIR-27 | culture | CA | Oscar Winner: Best Director
 KXGDPYEAR-26 | business | DC | US real GDP growth in 2026?
 KXBTCMINMON-BTC-26AUG31 | business | DC | How low will BTC get in August?
 KXMLBALCENT-26 | sports | US | AL Central Division Winner
-KXRUNBYMIDTERM-26NOV03 | politics | DC | Who will run for public office in 2026?
-KXCBDECISIONNZ-26SEP01 | business | NY | Reserve Bank of New Zealand rate decision in September 
-KXHORMUZAVG-27JAN01 | politics | Iran | How high will average weekly Hormuz traffic get in 2026?
+GOVPARTYOR-26 | politics | OR | Oregon Governor winner?
+KXJUULFLAVOR-27 | business | DC | What flavors will JUUL relaunch?
+KXLAPRIMARY-01D26 | politics | LA | LA-01 Democratic nominee?
 KXMOONMAN-31 | business | DC | Which country will be the next to send humans to the Moon?
-KXRT-UPR | culture | DC | The Uprising · Rotten Tomatoes score
-SDVOTETURN | politics | SD | South Dakota House Turnout
+KXDDR5MS-27JUL | business | DC | DDR5 16Gb (2Gx8) 4800/5600 · Average price in July 2027
+KXMUSICREPORT-TOPSALE27DEC31 | culture | DC | Top U.S. Selling Album (Physical and Digital Sales Combined): 2026
+KXFLPRIMARY-23D26 | politics | FL | FL-23 Democratic nominee?
 KXNCAAMBNEXTCOACH-KU26 | sports | KS | Kansas Basketball - Next Head Coach
-KXRANKLISTGOOGLESEARCHTOP5-26DEC | culture | DC | Top 5 most searched people on Google in 2026
-KXOSCARNOMACTO-27 | culture | CA | Oscar nominees: Best Actor
-KXBIGBROTHERELIMINATION-26AUG13 | culture | DC | Big Brother Season 28 · Week 5 elimination
-KXFLPRIMARY-25D26 | politics | FL | FL-25 Democratic nominee?
+KXOSCARSUPACTO-27 | culture | CA | Oscar winner: Best Supporting Actor
+KXDWTSCAST-26OCT01 | culture | DC | Dancing with the Stars S35: Contestants
+KXOSCARNOMINTERFILM-27 | culture | CA | Oscar nominees: Best International Feature Film
+NJVOTETURN | politics | NJ | New Jersey House Turnout
 KXMLBGAME-26AUG072015COLSTL | sports | CO | Colorado vs St. Louis
-KXNCAAMBACCREG-27 | sports | NC | ACC Regular Season Champion
+KXNCAAMBBIGTENREG-27 | sports | IL | Big Ten Regular Season Champion
 KXSOLMAXY-27JAN01 | business | DC | How high will Solana get in 2026?
-KXPRIMEENGCONSUMPTION-30 | weather | World | What will be the largest source of global primary energy consumption in 2030?
-KXHURCTOTMAJ-26DEC01 | weather | World | How many major Atlantic hurricanes will there be in 2026?
-KXRTX5090MS | prices | N/A | NVIDIA RTX 5090 · Average hourly price
-KXGTLB-26SEPCUST100K | prices | N/A | GitLab customers with arr over $100k in Q2
-KXAXP-26OCTCARDS | business | DC | American Express cards-in-force in Q3
-KXVPRESNOMR-28 | politics | DC | 2028 Republican VP nominee
-KXNCAAFSEED-27S12 | sports | US | College Football Playoff: #12 Seed
-KXSTARSHIPSPACE-26 | business | DC | How many SpaceX Starship launches will reach space in 2026?
-NYVOTETURN | politics | NY | New York House Turnout
-KXARREST-27JAN | politics | DC | Who will be arrested in 2026?
-KXNFLWINS-27CLE | sports | OH | Pro Football: Cleveland Total Wins
-KXFEDDECISION-27JUN | business | DC | Fed decision in Jun 2027?
-KXDSENATESEATS-27 | politics | DC | How many Senate seats will Democrats hold after the Midterms?
-AZMOV | politics | AZ | Arizona House Margin
-EVSHARE-30JAN | weather | World | EV market share in 2030?
 KXSCREWWORMCOUNT-27JAN01 | business | DC | How many human screwworm cases will be reported in the United States in 2026?
+KXHURCTOT-26DEC01 | weather | World | How many Atlantic hurricanes will there be in 2026?
+KXYOUA-28JANMEM | business | DC | Clear active clear+ members in 2026
+KXOKTAA-27MARCUST100K | prices | N/A | Okta customers with acv over $100k in fiscal 2027
+KXECONSTATCPICORE-26OCT | business | DC | CPI core month-over-month in Oct 2026?
+KXVPRESNOMR-28 | politics | DC | 2028 Republican VP nominee
+KXWNBADPOY-26 | sports | US | Women's Pro Basketball Defensive Player of the Year Winner
+KXANTHTOKEND-26AUG31 | business | CA | Anthropic average token price on Aug 31, 2026
+FLVOTETURN | politics | FL | Florida House Turnout
+KXARREST-27JAN | politics | DC | Who will be arrested in 2026?
+KXNEXTMANAGERMLB-BOS26 | sports | MA | Boston: Next Manager
+KXGAMEAWARDS-2026 | culture | DC | The Game Awards: 2026 Game of the Year
+KXDSENATESEATS-27 | politics | DC | How many Senate seats will Democrats hold after the Midterms?
+WYMOV | politics | WY | Wyoming House Margin
+KXHURRICANENAMES-26DEC01CPAC | weather | World | What named storms will be hurricanes in the Central Pacific this year?
+KXAISTREAMSERIES-27 | business | CA | Which companies will release a Fully AI-generated multi-episode scripted series  before 2027?
 KXBOND-30 | culture | DC | Next James Bond film: Actor cast as James Bond
 KXNEXTTEAMNFL-26MCROSBY | sports | US | Maxx Crosby's Next Team
-KXETHY-27JAN0100 | prices | N/A | Ethereum price at the end of 2026
+SENATEMI-26 | politics | MI | Michigan Senate winner?
 KXBALANCEPOWERCOMBO-27FEB | politics | DC | 2026 Midterms: Congress Balance of Power?
-KXJOINCLUB-26OCT02BBARCOLA | sports | US | Bradley Barcola: Next Club
+KXNEXTTEAMNBA-26DSABONIS11 | sports | US | Domantas Sabonis's Next Team
 KXNBA-27 | sports | US | 2027 Pro Basketball Champion
 KXBTCMAXY-26DEC31 | business | DC | How high will Bitcoin get in 2026?
-KXTVSHOWSCANCELLED-27 | culture | DC | TV shows cancelled this year
+KXBTCY-27JAN0100 | prices | N/A | Bitcoin price at the end of 2026
 KXMLBGAME-26AUG072140LADAZ | sports | AZ | Los Angeles D vs Arizona
-KXMUSKNW-26DEC31 | business | DC | Elon Musk net worth on December 31, 2026
+KXEARNINGSMENTIONNBIS-26AUG06 | business | DC | What will Nebius say during their next earnings call?
 KXBOXING-26SEP12GARCIABENN | sports | US | Ryan Garcia vs Conor Benn
-KXUKPARTY-29 | politics | Uk | Which party will win the next UK general election?
-KXFERT-26 | prices | N/A | How high will the price of fertilizer get this year?
+INVOTETURN | politics | IN | Indiana House Turnout
+KXOSCARNOMSBANIMATEDF-27 | culture | CA | Oscar nominees: Best Animated Feature Film
 KXF1CONSTRUCTORS-26 | sports | US | F1 Constructors Champion
-GAVOTETURN | politics | GA | Georgia House Turnout
-KXDEMFIRSTCONTEST-28 | politics | DC | Which state will vote first in the 2028 Democratic presidential primary?
+KXINSURRECTION-29 | politics | DC | Will Trump invoke the Insurrection Act?
+KYHOUSE | politics | KY | Kentucky House Races
 KXTAKEOVERACQWB-27JUN30 | business | DC | Who will successfully take over Warner Brothers?
-KXRTCOMPARE-DUNVSAVE26DEC21 | culture | DC | Dune vs Avengers: Highest Rotten Tomatoes Score
+KXPERFORMBONDSONG-35 | culture | DC | Next James Bond film: Artist performing the James Bond Theme
 MOON | business | DC | NASA lands on the moon?
 KXTOPARTISTUSA-26 | culture | DC | Top Artist on Spotify U.S. in 2026?
-KXNYCSTAT-HOME27 | politics | NY | Single adult NYC homeless shelter average stay in FY2027?
+KXVOTEPRIMARY-GOVFLNOMR26BDONBDON | politics | FL | Florida Republican Governor primary: Byron Donalds vote percent
 KXINXMINY-01JAN2027 | business | DC | How low will the S&P get this year?
 KXMUSICREPORT-TOPVYNLSALE27DEC31 | culture | DC | Top U.S. Selling Vinyl Album: 2026
 KXMISENATE-26 | politics | MI | Michigan Senate winner? (Person)
-KXOSCARNOMSBANIMATEDF-27 | culture | CA | Oscar nominees: Best Animated Feature Film
-KXNCAAMBAPRANK-27W16R1 | sports | US | College Basketball (M): #1 Ranked Team on Week 16 AP Poll
-KXLOSEPRIMARYSENATED-26NOV03 | politics | DC | How many Senate Democrats will lose their primary in 2026?
+KXWORDOFTHEYEAR-26DEC | culture | DC | Merriam-Webster Word of the Year 2026?
+KXNCAAFWINS-26KU | sports | KS | College Football: Kansas Regular Season Wins
+OKVOTETURN | politics | OK | Oklahoma House Turnout
+KXHURCTOTMAJ-26DEC01 | weather | World | How many major Atlantic hurricanes will there be in 2026?
 KXFIRSTHURRICANE-26DEC01ATL | weather | World | What will be the name of the first hurricane in the Atlantic this year?
-KXH100MS | prices | N/A | NVIDIA H100 · Average hourly price
-KXGOVWYNOMR-26 | politics | WY | Wyoming Republican Governor nominee?
-KXOSCARSUPACTR-27 | culture | CA | Oscar Winner: Best Supporting Actress
+SCHOUSE | politics | SC | South Carolina House Races
+KXROGANGUEST-27JAN01 | culture | DC | The Joe Rogan Experience: Guests in 2026
 KXTOPMONTHLY-26AUG | culture | DC | Artist with the most monthly Spotify listeners at the end of Aug 2026?
-KXAAAGASMAXFL-26DEC31 | business | FL | How high will gas prices in Florida get this year?
-KXSEXYMAN-26 | culture | DC | People's Sexiest Man Alive for 2026
+KXAVGMEASLESDJT-29 | business | DC | What will the average number of measles cases be during Trump's term?
+KXRT-BYA | culture | DC | By Any Means · Rotten Tomatoes score
 KXPRESNOMD-28 | politics | DC | 2028 Democratic presidential nominee
 KXMLBNLMOTY-26 | sports | US | NL Manager of the Year Winner?
-KXLOSEREELECTIONDSEN-2026 | politics | DC | How many Democratic Senators will lose reelection in 2026?
+KXHORMUZMAX-26AUG16 | politics | Iran | Peak Strait of Hormuz traffic day? (8/10 - 8/16)
 KXRELOCATIONCHI-28 | sports | IL | Chicago Pro Football Team: Relocation
-GOVPARTYMA-26 | politics | MA | Massachusetts Governor winner?
-SENATEMI-26 | politics | MI | Michigan Senate winner?
-KXMLBAL-26 | sports | US | American League Champion
-KXEMERCUTS-26 | business | DC | Number of emergency rate cuts in 2026?
-KXCBDECISIONMEXICO-26SEP24 | business | Mexico | Bank of Mexico rate decision in September
-KXNCAAMBAPRANK-27W13R1 | sports | US | College Basketball (M): #1 Ranked Team on Week 13 AP Poll
-LAVOTETURN | politics | LA | Louisiana House Turnout
+KXLAGODAYS-26AUG | politics | DC | How many times will Trump visit Mar-a-Lago in Aug 2026?
+KXSENATEMAD-26 | politics | MA | Massachusetts Democratic Senate nominee?
+KXAAAGASMAXCA-26DEC31 | business | CA | How high will gas prices in California get this year?
+KXCOVEREA-27 | sports | US | Who will be the cover athlete for the next EA Sports college basketball video game?
+KXAGENCYELIM-29 | politics | DC | Which agencies will Trump eliminate?
 SENATETX-26 | politics | TX | Texas Senate winner?
 KXNEXTTEAMNBA-26JKUMINGA0 | sports | US | Jonathan Kuminga's Next Team
-KXTOPARTISTRUNNERUP-26 | culture | DC | #2 Artist on Spotify in 2026?
-KXMDT-26SEPCARDGROW | business | DC | Medtronic cardiovascular organic growth in Q1
-KXCAVAFT-26SEP07 | business | DC | Cava Monthly Foot Traffic in August
-PAVOTETURN | politics | PA | Pennsylvania House Turnout
+KXOSCARACTR-27 | culture | CA | Oscar winner: Best Actress
+KXETHMINMON-ETH-26AUG31 | business | DC | How low will ETH get in August?
+KXXRPMAXMON-XRP-26AUG31 | business | DC | How high will XRP get in August?
+SENATESC-26 | politics | SC | South Carolina Senate winner?
 KXTIME-26 | culture | DC | Time's Person of the Year for 2026
 KXMLB-26 | sports | US | Pro Baseball Champion
-KXCLOSESTGOVERNOR-27JAN20 | politics | DC | Closest Governor race in 2026?
-KXSENATEMND-26 | politics | MN | Minnesota Democratic Senate nominee?
-CAVOTETURN | politics | CA | California House Turnout
-SENATENH-26 | politics | NH | New Hampshire Senate winner?
+KXTRUMPNOMNUM-26AUG09 | politics | DC | How many nominations will Trump send to the Senate this week? (8/9-8/15)
+KXFLPRIMARY-25D26 | politics | FL | FL-25 Democratic nominee?

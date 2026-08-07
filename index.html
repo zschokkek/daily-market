@@ -164,14 +164,12 @@ function toBroad(rawCat, sub, ticker, title){
   return "business";
 }
 function cultureSubcat(ticker, title, sub){
+  if(["TV","CELEB","TV & CELEB","FILM","MUSIC"].includes(sub)) sub="";
   const low=(ticker+" "+title+" "+(sub||"")).toLowerCase();
-  if(["film","movie","cinema","oscar","box office"].some(k=> low.includes(k))) return "FILM";
-  if(["tv","television","show","series","season","cast","winner","elimination","celeb","kardashian","emmy","netflix","hbo","big brother","bachelor","white lotus","dancing with the stars","stranger things","lotus"].some(k=> low.includes(k))){
-    if(["grammy","album","song","spotify","billboard"].some(k=> low.includes(k)) && (low.includes("grammy") || low.includes("billboard") || low.includes("spotify"))) return "MUSIC";
-    return "TV & CELEB";
-  }
-  if(["music","song","album","grammy","spotify"].some(k=> low.includes(k))) return "MUSIC";
-  return "TV & CELEB";
+  if(["film","movie","cinema","oscar","box office","rotten"].some(k=> low.includes(k))) return "FILM";
+  if(["music","song","album","grammy","spotify","billboard","coachella","rolling loud","eurovision","reputation","harry styles"].some(k=> low.includes(k))) return "MUSIC";
+  if(["tv","television","emmy","netflix","hbo","big brother","bachelor","white lotus","dancing with the stars","stranger things","love island","elder scrolls","game awards","iron man","kimmel","dune"].some(k=> low.includes(k))) return "TV";
+  return "CELEB";
 }
 function pricesSubcat(ticker, title, sub){
   const low=(ticker+" "+title+" "+(sub||"")).toLowerCase();
