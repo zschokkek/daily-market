@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Kalshi Wordle</title>
+<title>KXDaily</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800;900&family=JetBrains+Mono:wght@500;700&family=Libre+Franklin:wght@700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>tailwind.config={theme:{extend:{fontFamily:{sans:['Libre Franklin','Inter','system-ui','sans-serif'],mono:['JetBrains Mono','monospace']}}}}</script>
@@ -28,7 +28,7 @@ body{background:#fff;color:#121213}
 <header class="border-b border-[#d3d6da] sticky top-0 bg-white z-40">
   <div class="max-w-[680px] mx-auto h-[64px] flex items-center justify-center relative px-4">
     <button id="how-btn" class="absolute left-4 w-8 h-8 grid place-items-center text-[18px]">?</button>
-    <h1 class="text-[34px] md:text-[38px] font-black tracking-[0.02em]">KALSHI WORDLE</h1>
+    <h1 class="text-[34px] md:text-[38px] font-black tracking-[0.02em]">KXDAILY</h1>
     <button id="share-btn" class="hidden absolute right-4 text-[12px] font-bold border border-[#121213] px-3 py-1">SHARE</button>
   </div>
 </header>
@@ -657,7 +657,7 @@ function checkEnd(celebrate){
 }
 function shareText(){
   const won=guesses.some(g=>g.ticker===TARGET.ticker);
-  const header= won ? `Kalshi Wordle ${TODAY_ISO} ${guesses.length}/${MAX_GUESSES}` : `Kalshi Wordle ${TODAY_ISO} X/${MAX_GUESSES}`;
+  const header= won ? `KXDaily ${TODAY_ISO} ${guesses.length}/${MAX_GUESSES}` : `KXDaily ${TODAY_ISO} X/${MAX_GUESSES}`;
   let grid="";
   for(const g of guesses){
     const fb=feedback(g,TARGET);
