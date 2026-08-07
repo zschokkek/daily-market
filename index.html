@@ -671,9 +671,11 @@ async function pickTarget(){
 }
 
 let guesses=[];
-function saveState(){ localStorage.setItem('kalshi-wordle-guesses-'+TODAY_ISO, JSON.stringify(guesses.map(g=>g.ticker))); }
+function saveState(){ localStorage.setItem('kalshi-wordle-guesses-'+TODAY_ISO, JSON.stringify(guesses.map(g=>g.ticker))); localStorage.setItem('kalshi-wordle-gaveup-'+TODAY_ISO, GAVE_UP?'1':'0'); }
 function restoreState(){
   try{
+    const gave=localStorage.getItem('kalshi-wordle-gaveup-'+TODAY_ISO);
+    if(gave==='1') GAVE_UP=true;
     const raw=localStorage.getItem('kalshi-wordle-guesses-'+TODAY_ISO);
     if(raw){
       const tickers=JSON.parse(raw);
@@ -827,10 +829,8 @@ function feedback(guess, target){
 function addRow(guess, animate){
   const empty=document.getElementById('empty'); if(empty) empty.remove();
   let fb=feedback(guess, TARGET);
-  // give-up reveal should not be highlighted green
-  if(GAVE_UP && guess.ticker===TARGET.ticker){
-    fb={broad:'gray',sub:'gray',loc:'gray',lArrow:'',strike:'gray',sArrow:'',exp:'gray',eArrow:'',vol:'gray',vArrow:'',price:'gray',pArrow:'',name:'gray'};
-  }
+  const isGiveUpReveal = GAVE_UP && guess.ticker===TARGET.ticker;
+  // give-up reveal is green again (was gray) — minimalist give-up indication is in the result card + subtle row badge below
   const board=document.getElementById('board');
   const row=document.createElement('div');
   row.className='grid grid-cols-[1.4fr_0.65fr_0.5fr_0.48fr_0.35fr_0.4fr_0.55fr_0.5fr] gap-1.5';
@@ -878,6 +878,13 @@ function addRow(guess, animate){
     </div>
   `;
   board.appendChild(row);
+  if(isGiveUpReveal){
+    const note=document.createElement('div');
+    note.textContent='revealed via give up';
+    note.className='text-[10px] font-bold tracking-[0.12em] text-zinc-500 ml-1 -mt-1 mb-1';
+    board.appendChild(note);
+    row.classList.add('opacity-90');
+  }
   if(animate) requestAnimationFrame(()=> row.style.opacity='1');
 }
 
@@ -902,6 +909,14 @@ function checkEnd(celebrate){
         sub = ` ↳ ${TARGET.subtickers[idx]}`;
       }
       document.getElementById('result-sub').textContent=`${TARGET.name}${sub} — ${TARGET.broad} · ${TARGET.strikes} strikes · ${fmtDate(TARGET.expiration)} · ${fmtVol(TARGET.volume)}`;
+    } else if(GAVE_UP){
+      document.getElementById('result-title').innerHTML=`ANSWER: <span class="ml-2 text-[11px] font-bold tracking-[0.14em] text-zinc-500 align-middle">GAVE UP</span>`;
+      let sub = '';
+      if (TARGET.ticker && TARGET.ticker.endsWith('HOUSE') && TARGET.subtickers && TARGET.subtickers.length) {
+        const idx = Math.abs(hashStr(TODAY_ISO + TARGET.ticker)) % TARGET.subtickers.length;
+        sub = ` ↳ ${TARGET.subtickers[idx]}`;
+      }
+      document.getElementById('result-sub').textContent=`${TARGET.name}${sub} — ${TARGET.broad} · ${TARGET.strikes} · ${fmtDate(TARGET.expiration)} · ${fmtVol(TARGET.volume)}`;
     } else {
       document.getElementById('result-title').textContent=`ANSWER:`;
       let sub = '';
