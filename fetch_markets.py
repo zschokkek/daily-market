@@ -131,8 +131,25 @@ def sports_subcat(ticker, title, subcategory):
     if "KXUFC" in s or "UFC" in tu or "MMA" in tu:
         return "MMA"
     if subcategory:
-        return subcategory.replace("KX","").replace("GAME","").strip()[:16] or "Other"
+        # merge BTTS/SPREAD/TOTAL/ADVANCE variants -> base tournament (e.g., LEAGUESCUPBTTS -> LEAGUESCUP, UECLSPREAD -> UECL)
+        base = subcategory.upper().replace("KX","").replace("GAME","").strip()
+        for suf in ["BTTS","SPREAD","TOTAL","ADVANCE","ADVAN","TOPX","LEADER","RELEGATION","TEAMPOINTS","TEAMPO"]:
+            if base.endswith(suf) and len(base) > len(suf)+3:
+                base = base[:-len(suf)].strip()
+        # weather tickers mis-classed as sports (KXEUCLIMATE etc.) -> map to weather-like label will be re-routed to weather broad, but keep fallback
+        if base.startswith("EUCLIMATE") or base.startswith("ARCTIC") or base.startswith("HURR") or base.startswith("RAIN") or base.startswith("TEMP") or base.startswith("EARTHQUAKE"):
+            return base.replace("KX","")[:16]
+        return base[:16] or "Other"
     return "Other"
+
+def weather_subcat(ticker, title, subcategory):
+    low=(ticker+" "+title+" "+(subcategory or "")).lower()
+    if any(k in low for k in ["hurricane","storm","tornado"]): return "HURRICANE"
+    if any(k in low for k in ["rain"]): return "RAIN"
+    if any(k in low for k in ["snow","ice"]): return "SNOW"
+    if any(k in low for k in ["temp","heat","hot"]): return "HEAT"
+    if any(k in low for k in ["earthquake"]): return "QUAKE"
+    return "WEATHER"
 
 US_STATES = ["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","DC"]
 CITY_TO_STATE = {"NEW YORK":"NY","NYC":"NY","LOS ANGELES":"CA","LA":"CA","CHICAGO":"IL","BOSTON":"MA","PITTSBURGH":"PA","PHILADELPHIA":"PA","TORONTO":"ON","MONTREAL":"QC","MIAMI":"FL","ATLANTA":"GA","SEATTLE":"WA","SAN FRANCISCO":"CA","HOUSTON":"TX","DALLAS":"TX","WASHINGTON":"DC","DETROIT":"MI","CLEVELAND":"OH","DENVER":"CO","PHOENIX":"AZ"}
@@ -319,9 +336,33 @@ for ev in events:
     if vol24_sum and vol24_sum > 5000 and is_today:
         live = True
 
-    # Include logic: intuitive pool = all open markets (sports futures like AL MVP included)
-    # previously filtered sports to today only — now include all sports futures per user request
-    include = True
+    # Include logic: sports futures always in, single-game props only if live today
+    if broad=="sports":
+        # detect single-game / daily prop (2-way game, vs/@, GAME ticker)
+        is_game = False
+        t_up = (ev.get("event_ticker") or "").upper()
+        title_up = (ev.get("title") or "").upper()
+        if "GAME" in t_up or "KXMLBGAME" in t_up or "KXNBAGAME" in t_up or "KXWNBAGAME" in t_up or "KXNFLGAME" in t_up:
+            is_game = True
+        elif " VS " in title_up or " @ " in title_up or " V " in title_up:
+            # title like "Athletics vs Boston Red Sox" with 2 strikes = single game
+            if strikes == 2 and any(k in title_up for k in [" VS ", " @ "]):
+                is_game = True
+        elif strikes == 2 and exp_day in (today_iso, tomorrow_iso) and "WINNER" not in title_up:
+            # small heuristic: 2-strike daily game
+            # keep futures (MVP etc. have 20+ strikes and far exp) out
+            is_game = bool(re.search(r'\bVS\b|\b@\b', title_up))
+        if is_game:
+            include = is_today or live
+        else:
+            include = True  # futures, awards, season props
+    elif broad=="weather":
+        wsub = weather_subcat(ev.get("event_ticker",""), ev.get("title","") or "", sub)
+        # stash normalized weather subcat for later category
+        ev["_wsub"] = wsub
+        include = True
+    else:
+        include = True
     if not include:
         continue
 
@@ -340,7 +381,11 @@ for ev in events:
         vol_sum = abs(hash(ev.get("event_ticker","")) % 80000)+5000
 
     # subcat and category + location — intuitive for normal user, no ++ padding
-    if broad=="sports":
+    if broad=="weather":
+        wsub = ev.get("_wsub") or weather_subcat(ev.get("event_ticker",""), ev.get("title","") or "", sub)
+        detail = f"Weather · {wsub}"
+        sub_for_pool = wsub
+    elif broad=="sports":
         league = sports_subcat(ev.get("event_ticker",""), ev.get("title","") or "", sub)
         detail = f"Sports · {league}"
         sub_for_pool = league
@@ -471,7 +516,7 @@ if house_buckets:
             "category": "Politics · HOUSE",
             "raw_category": "Politics",
             "location": state,
-            "strikes": strikes_sum,
+            "strikes": 2,  # custom bunch is a 2-way race (D vs R), not sum of districts
             "expiration": exp,
             "volume": int(vol_sum),
             "ticker": ticker_st,

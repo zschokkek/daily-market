@@ -52,13 +52,13 @@ body{background:#fff;color:#121213}
 
   <!-- headers — split category into two + location -->
   <div class="grid grid-cols-[1.5fr_0.5fr_0.55fr_0.5fr_0.4fr_0.6fr_0.55fr] gap-1.5 px-1">
-    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213]">MARKET</div>
-    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center">CATEGORY</div>
-    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center">DETAIL</div>
-    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center">LOC</div>
-    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center">STRIKES</div>
-    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center">EXPIRES</div>
-    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center">VOLUME</div>
+    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213]" title="Market name (e.g., New York House Races)">MARKET</div>
+    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center" title="Broad: sports · politics · business · prices · weather · culture">CATEGORY</div>
+    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center" title="League / sub-market: MLB, ELECT, HOUSE, TECH, CMDTY…">DETAIL</div>
+    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center" title="State if USA (MA, NY), country if abroad, N/A for prices">LOC</div>
+    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center" title="# outcomes. Custom House bunches (NYHOUSE) = 2 (D vs R), not sum of districts">STRIKES</div>
+    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center" title="Expiration — shown as Aug 08, 26">EXPIRES</div>
+    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center" title="Total volume $">VOLUME</div>
   </div>
 
   <div id="board" class="flex flex-col gap-1.5 min-h-[140px]">
@@ -94,10 +94,10 @@ body{background:#fff;color:#121213}
     </div>
     <ol class="list-decimal pl-5 text-[14px] leading-relaxed mt-3 space-y-2 font-medium">
       <li>Guess the secret Kalshi market of the day.</li>
-      <li>Pool is <b>every Sports market expiring today</b> + <b>any LIVE market</b>. We load <b>all</b> of them (check the banner).</li>
-      <li>Five broad categories: <b>sports</b> · <b>politics</b> · <b>business</b> · <b>prices</b> · <b>weather</b> (split out above).</li>
-      <li>After each guess: <span class="inline-block w-3 h-3 bg-[#6aaa64] align-middle"></span> green = exact, <span class="inline-block w-3 h-3 bg-[#c9b458] align-middle"></span> yellow = close, <span class="inline-block w-3 h-3 bg-[#787c7e] align-middle"></span> gray = miss. Arrows = higher/lower/earlier/later.</li>
-      <li>10 tries. Share your grid.</li>
+      <li>Pool: <b>sports futures always</b> + <b>single games only if today/live</b> + <b>all politics/business/prices/weather/culture open</b>. House districts are bunched per state — <b>NYHOUSE = New York House Races (custom 2-way D vs R, 2 strikes, shows one district when correct)</b>.</li>
+      <li>Six broads: <b>sports</b> · <b>politics</b> (ELECT or HOUSE) · <b>business</b> (TECH/FINANCE/CORP) · <b>prices</b> (crypto/CMDTY only on $) · <b>weather</b> (HEAT/RAIN/HURRICANE) · <b>culture</b> (MUSIC/FILM/TV & CELEB). Abbreviations show as tags: <b>NRSC → Republican</b>.</li>
+      <li>After each guess: <span class="inline-block w-3 h-3 bg-[#6aaa64] align-middle"></span> green = exact, <span class="inline-block w-3 h-3 bg-[#c9b458] align-middle"></span> yellow = close (e.g., market name shares ≥2 words, same region for LOC). Arrows = higher/lower/earlier/later. <b>LOC</b>=state/country (N/A for prices). <b>EXPIRES</b> as <b>Aug 08, 26</b>. <b>STRIKES</b>=#outcomes.</li>
+      <li>10 tries. Share copies with a sleek “Copied” toast for 2s.</li>
     </ol>
     <div class="grid grid-cols-3 gap-2 mt-4 text-center text-[11px] font-black tracking-wide">
       <div class="tile green py-3">GREEN<br><span class="font-medium">exact</span></div>
@@ -154,6 +154,15 @@ function businessSubcat(ticker, title, sub){
   if(["company","merger","acquisition","earnings"].some(k=> low.includes(k))) return "CORP";
   return "CORP";
 }
+function weatherSubcat(ticker, title, sub){
+  const low=(ticker+" "+title+" "+(sub||"")).toLowerCase();
+  if(["hurricane","storm","tornado"].some(k=> low.includes(k))) return "HURRICANE";
+  if(low.includes("rain")) return "RAIN";
+  if(["snow","ice"].some(k=> low.includes(k))) return "SNOW";
+  if(["temp","heat","hot"].some(k=> low.includes(k))) return "HEAT";
+  if(low.includes("earthquake")) return "QUAKE";
+  return "WEATHER";
+}
 function sportsSubcat(ticker, title, sub){
   const s=(sub||ticker||title||"").toUpperCase();
   const t=(ticker||"").toUpperCase();
@@ -168,7 +177,13 @@ function sportsSubcat(ticker, title, sub){
   if(s.includes("KXGOLF")||t.includes("KXGOLF")||tu.includes("GOLF")||tu.includes("PGA")) return "Golf";
   if(s.includes("KXTENN")||tu.includes("TENNIS")) return "Tennis";
   if(s.includes("KXUFC")||tu.includes("UFC")||tu.includes("MMA")) return "MMA";
-  if(sub) return sub.replace("KX","").replace("GAME","").slice(0,12)||"Other";
+  if(sub){
+    let base=sub.toUpperCase().replace("KX","").replace("GAME","").trim();
+    for(const suf of ["BTTS","SPREAD","TOTAL","ADVANCE","ADVAN","TOPX","LEADER","RELEGATION","TEAMPOINTS","TEAMPO"]){
+      if(base.endsWith(suf) && base.length > suf.length+3) base=base.slice(0,-suf.length).trim();
+    }
+    return base.slice(0,16)||"Other";
+  }
   return "Other";
 }
 const ABBR_TAGS = {
@@ -236,8 +251,16 @@ async function loadPool(){
       try{ if(close && exp){ const ct=new Date(close), et=new Date(exp); if(ct<now && now<et) isLive=true; } }catch(e){}
       let broad = toBroad(raw, sub, m.event_ticker||"", m.title||"");
       if(!raw && (m.event_ticker||"").match(/^KX(M LB|NFL|NBA|NHL|SOCC|WNB|LOL|TENN|UFC|GOLF)/) || (m.event_ticker||"").includes("SPORT")){ broad="sports"; }
-      // intuitive pool = all open (sports futures like AL MVP included)
+      // sports: futures always, single games only if live today
       let include = true;
+      if(broad==="sports"){
+        const isGame = (m.event_ticker||"").toUpperCase().includes("GAME") || (m.title||"").toUpperCase().includes(" VS ") || (m.title||"").toUpperCase().includes(" @ ");
+        if(isGame){
+          const expDay=(m.expected_expiration_time||m.expiration_time||"").slice(0,10);
+          const today=new Date().toISOString().slice(0,10);
+          if(expDay!==today) include=false;
+        }
+      }
       if(!include) continue;
       const strikes = info?info.strikes:2;
       let detail, subForPool;
@@ -323,7 +346,7 @@ async function loadPool(){
       if(Object.keys(houseBuckets).length){
         for(const [state,bucket] of Object.entries(houseBuckets)){
           const vol=bucket.reduce((s,x)=>s+(x.volume||0),0);
-          const strikes=bucket.reduce((s,x)=>s+(x.strikes||1),0);
+          const strikes=2; // custom bunch is 2-way D vs R
           const exps=bucket.map(x=>x.expiration).filter(Boolean).sort();
           const exp=exps[0]||bucket[0].expiration;
           const nameMap={AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming",DC:"District of Columbia"};
@@ -561,11 +584,12 @@ function feedback(guess, target){
     if(gv < tv) vArrow=' ▲'; else if(gv > tv) vArrow=' ▼';
     if(ratio<=0.25) vArrow='';
   }
-  // market name: green if exact, yellow if shares ≥2 words (e.g., "total restaurant" → yellow)
+  // market name: green if exact, yellow if shares ≥2 meaningful words (e.g., "total restaurant" → yellow, ignore will/the/with)
   let name = 'gray';
   if (guess.ticker===target.ticker) name='green';
   else {
-    const tok = s => (s||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim().split(/\s+/).filter(w=>w.length>=2);
+    const stop=new Set(["will","the","with","from","this","that","have","been","are","was","were","for","and","our","your","their","about","after","before","whether","which","when"]);
+    const tok = s => (s||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim().split(/\s+/).filter(w=>w.length>3 && !stop.has(w));
     const aSet = new Set(tok(guess.name));
     const bSet = new Set(tok(target.name));
     let common=0;
