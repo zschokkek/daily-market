@@ -100,6 +100,9 @@ def business_subcat(ticker, title, subcategory):
 
 def culture_subcat(ticker, title, subcategory):
     low=(ticker+" "+title+" "+(subcategory or "")).lower()
+    # FILM first — Oscar/film must be FILM, not TV & CELEB via 'winner'
+    if any(k in low for k in ["oscar","film","movie","cinema","box office"]):
+        return "FILM"
     # TV shows first — Big Brother, White Lotus, Bachelor etc were defaulting to MUSIC incorrectly
     if any(k in low for k in ["tv","television","show","series","season","cast","winner","elimination","celeb","kardashian","emmy","netflix","hbo","big brother","bachelor","white lotus","dancing with the stars","stranger things","lotus"]):
         # but Grammy/Music winners should stay MUSIC, not TV — check music first if grammy/album
