@@ -4,3 +4,6 @@ __pycache__/
 chosen.log
 chosen.txt
 markets_raw.json
+# dev only — hidden builder not committed
+dev_hidden_builder.html
+hidden_builder.html
