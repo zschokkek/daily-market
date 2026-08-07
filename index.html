@@ -692,16 +692,20 @@ function addRow(guess, animate){
       <div class="text-[13px] md:text-[14px] font-black tracking-wide leading-none">${(guess.location||'N/A').toUpperCase()}</div>
     </div>
     <div class="tile ${fb.strike} p-2 flex flex-col items-center justify-center text-center min-h-[64px]">
-      <div class="text-[20px] md:text-[22px] font-black mono">${guess.strikes}${fb.sArrow}</div>
+      <div class="text-[20px] md:text-[22px] font-black mono leading-none">${guess.strikes}</div>
+      <div class="text-[14px] leading-none mt-1">${fb.sArrow.trim()}</div>
     </div>
     <div class="tile ${fb.price} p-2 flex flex-col items-center justify-center text-center min-h-[64px]">
-      <div class="text-[15px] md:text-[16px] font-black mono">${(guess.price||50)}¢${fb.pArrow}</div>
+      <div class="text-[15px] md:text-[16px] font-black mono leading-none">${(guess.price||50)}¢</div>
+      <div class="text-[14px] leading-none mt-1">${fb.pArrow.trim()}</div>
     </div>
     <div class="tile ${fb.exp} p-2 flex flex-col items-center justify-center text-center min-h-[64px]">
-      <div class="text-[14px] md:text-[15px] font-black mono">${fmtDate(guess.expiration)}${fb.eArrow}</div>
+      <div class="text-[14px] md:text-[15px] font-black mono leading-none">${fmtDate(guess.expiration)}</div>
+      <div class="text-[14px] leading-none mt-1">${fb.eArrow.trim()}</div>
     </div>
     <div class="tile ${fb.vol} p-2 flex flex-col items-center justify-center text-center min-h-[64px]">
-      <div class="text-[15px] md:text-[17px] font-black mono">${fmtVol(guess.volume)}${fb.vArrow}</div>
+      <div class="text-[15px] md:text-[17px] font-black mono leading-none">${fmtVol(guess.volume)}</div>
+      <div class="text-[14px] leading-none mt-1">${fb.vArrow.trim()}</div>
     </div>
   `;
   board.appendChild(row);
