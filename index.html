@@ -132,7 +132,7 @@ body{background:#fff;color:#121213}
 </div>
 
 <script>
-const TODAY_ISO = new Date().toISOString().slice(0,10);
+const TODAY_ISO = new Intl.DateTimeFormat('en-CA', {timeZone:'America/New_York', year:'numeric', month:'2-digit', day:'2-digit'}).format(new Date());
 const APP_VERSION = "2026-08-07-hidden2"; // bump on each deploy to bust Pages cache
 const MAX_GUESSES = 10;
 let POOL = [];
@@ -746,8 +746,8 @@ async function pickTarget(){
   // curated hidden: deterministic daily pick by date so you control order via hidden_pool.json array order
   // delete hidden_pool.json to go back to random-from-POOL
   if(hiddenSource){
-    const REF = new Date('2026-08-07T00:00:00Z');
-    const days = Math.floor((new Date(TODAY_ISO+'T00:00:00Z') - REF) / 86400000);
+    const REF = new Date('2026-08-07T12:00:00Z');
+    const days = Math.floor((new Date(TODAY_ISO+'T12:00:00Z') - REF) / 86400000);
     // stable index: sequential days modulo length (reorder hidden_pool.json to control sequence)
     // fallback to hash for non-sequential variety if you shuffle file, both give same result when shuffled
     let hIdx = ((days % hiddenSource.length) + hiddenSource.length) % hiddenSource.length;

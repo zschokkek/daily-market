@@ -44,9 +44,13 @@ class Handler(SimpleHTTPRequestHandler):
                             if p.get("name")==chosen_name:
                                 chosen=p; break
                 if not chosen and pick_from:
-                    # hidden_pool: deterministic daily pick by date (reorder hidden_pool.json to control sequence)
+                    # hidden_pool: deterministic daily pick by date (reorder hidden_pool.json to control sequence) — ET midnight
                     if hidden:
-                        today = datetime.datetime.now(datetime.timezone.utc).date()
+                        try:
+                            from zoneinfo import ZoneInfo
+                            today = datetime.datetime.now(ZoneInfo("America/New_York")).date()
+                        except:
+                            today = datetime.datetime.now(datetime.timezone.utc).date()
                         ref = datetime.date(2026,8,7)
                         days = (today - ref).days
                         idx = days % len(hidden)
@@ -184,14 +188,19 @@ if __name__=="__main__":
             from collections import Counter
             cnt = Counter(p.get("broad","?") for p in pool)
             total = len(pool)
-            # also log to chosen.log startup entry
+            # also log to chosen.log startup entry — ET date for hidden rotation
+            try:
+                from zoneinfo import ZoneInfo
+                et_today = datetime.datetime.now(ZoneInfo("America/New_York")).date()
+            except:
+                et_today = datetime.datetime.now(datetime.timezone.utc).date()
             startup_entry = {
                 "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 "type": "startup",
                 "poolSize": total,
                 "hiddenSize": len(hidden) if hidden else 0,
                 "broadCounts": dict(cnt),
-                "today": datetime.datetime.now(datetime.timezone.utc).date().isoformat(),
+                "today": et_today.isoformat(),
             }
             with open(LOG_FILE,"a") as f:
                 f.write(json.dumps(startup_entry)+"\n")
@@ -209,7 +218,11 @@ if __name__=="__main__":
                 try: shutil.rmtree(p, ignore_errors=True)
                 except: pass
             if hidden:
-                today = datetime.datetime.now(datetime.timezone.utc).date()
+                try:
+                    from zoneinfo import ZoneInfo
+                    today = datetime.datetime.now(ZoneInfo("America/New_York")).date()
+                except:
+                    today = datetime.datetime.now(datetime.timezone.utc).date()
                 ref = datetime.date(2026,8,7)
                 days = (today - ref).days
                 idx = days % len(hidden)
