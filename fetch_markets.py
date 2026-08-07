@@ -115,7 +115,7 @@ def get_sport_family(sub):
     if "MLB" in s: return "baseball"
     if "NHL" in s: return "hockey"
     if any(k in s for k in ["SOCCER","MLS","EPL","LEAGUESCUP","UCL","UECL","COPPAITALIA","UEL","COPADOBRASIL","LALIGA","BUNDESLIGA","SERIEA","LIGUE1","CONMEBOL","COPAAMERICA","LEAGUE","CUP"]): return "soccer"
-    if any(k in s for k in ["GOLF","PGA","HOLEIN","WYNDHAM"]): return "golf"
+    if any(k in s for k in ["GOLF","PGA","HOLEIN","WYNDHAM","KFT","KORN","LPGA"]): return "golf"
     if any(k in s for k in ["TENNIS","ATP","WTA"]): return "tennis"
     if any(k in s for k in ["MMA","UFC","BOXING","WBC"]): return "combat"
     if any(k in s for k in ["ESPORTS","LOL","CS2"]): return "esports"
@@ -143,10 +143,14 @@ def sports_subcat(ticker, title, subcategory):
         return "Esports"
     if "KXNHL" in s or "KXNHL" in t or "NHL" in tu or "HOCKEY" in tu:
         return "NHL"
+    if "KFT" in s or "KFT" in t or "KORN" in s or "KORN" in t or "KORN FERRY" in tu:
+        return "KFT"
+    if "LPGA" in s or "LPGA" in t or "LPGA" in tu:
+        return "LPGA"
     if "KXSOCCER" in s or "KXSOCC" in s or "SOCCER" in tu or "MLS" in tu:
         return "Soccer"
     if "HOLEINONE" in s or "HOLEINONE" in t or "HOLEINONE" in tu or "WYNDHAM" in tu or "WYNDHAM" in s or "PGAHOLEINONE" in s:
-        return "Golf"
+        return "PGA"
     if "KXGOLF" in s or "KXGOLF" in t or "GOLF" in tu or "PGA" in tu or "PGA" in s or "PGA" in t or "GOLF" in s or "GOLF" in t:
         return "Golf"
     if "KXTENN" in s or "TENNIS" in tu:

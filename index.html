@@ -201,7 +201,9 @@ function sportsSubcat(ticker, title, sub){
   if(s.includes("KXWNB")||t.includes("KXWNB")||tu.includes("WNBA")) return "WNBA";
   if(s.includes("KXLOL")||t.includes("KXLOL")||tu.includes("LEAGUE OF LEGENDS")) return "Esports";
   if(s.includes("KXNHL")||t.includes("KXNHL")||tu.includes("NHL")||tu.includes("HOCKEY")) return "NHL";
-  if(s.includes("HOLEINONE")||t.includes("HOLEINONE")||tu.includes("HOLEINONE")||tu.includes("WYNDHAM")||s.includes("WYNDHAM")||s.includes("PGAHOLEINONE")) return "Golf";
+  if(s.includes("KFT")||t.includes("KFT")||s.includes("KORN")||t.includes("KORN")||tu.includes("KORN FERRY")) return "KFT";
+  if(s.includes("LPGA")||t.includes("LPGA")||tu.includes("LPGA")) return "LPGA";
+  if(s.includes("HOLEINONE")||t.includes("HOLEINONE")||tu.includes("HOLEINONE")||tu.includes("WYNDHAM")||s.includes("WYNDHAM")||s.includes("PGAHOLEINONE")) return "PGA";
   if(s.includes("KXSOCC")||s.includes("SOCCER")||tu.includes("SOCCER")||tu.includes("MLS")) return "Soccer";
   if(s.includes("KXGOLF")||t.includes("KXGOLF")||tu.includes("GOLF")||tu.includes("PGA")||s.includes("GOLF")||s.includes("PGA")||t.includes("GOLF")||t.includes("PGA")) return "Golf";
   if(s.includes("KXTENN")||tu.includes("TENNIS")) return "Tennis";
@@ -712,7 +714,7 @@ function getSportFamily(sub){
   if(["MLB"].includes(s) || s.includes("MLB")) return "baseball";
   if(["NHL"].includes(s) || s.includes("NHL")) return "hockey";
   if(["SOCCER","MLS","EPL","LEAGUESCUP","UCL","UECL","COPPAITALIA","UEL","COPADOBRASIL","LALIGA","BUNDESLIGA","SERIEA","LIGUE1","CONMEBOL","COPAAMERICA"].some(k=> s.includes(k)) || s.includes("SOCCER") || s.includes("LEAGUE") || s.includes("CUP")) return "soccer";
-  if(["GOLF","PGA","HOLEIN","WYNDHAM"].some(k=> s.includes(k)) || s.includes("GOLF") || s.includes("PGA") || s.includes("HOLEIN") || s.includes("WYNDHAM")) return "golf";
+  if(["GOLF","PGA","HOLEIN","WYNDHAM","KFT","KORN","LPGA"].some(k=> s.includes(k)) || s.includes("GOLF") || s.includes("PGA") || s.includes("HOLEIN") || s.includes("WYNDHAM") || s.includes("KFT") || s.includes("KORN") || s.includes("LPGA")) return "golf";
   if(["TENNIS","ATP","WTA","WTAFINALS"].some(k=> s.includes(k)) || s.includes("TENN") || s.includes("ATP") || s.includes("WTA")) return "tennis";
   if(["MMA","UFC","BOXING","WBC"].some(k=> s.includes(k)) || s.includes("MMA") || s.includes("UFC")) return "combat";
   if(["ESPORTS","LOL","CS2"].some(k=> s.includes(k)) || s.includes("ESPORT")) return "esports";
