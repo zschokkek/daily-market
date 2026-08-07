@@ -452,6 +452,10 @@ for ev in events:
         detail = f"{raw_cat} · {sub_for_pool}" if sub and sub!=raw_cat else raw_cat or broad
         detail = detail.strip()
 
+    # filter near-certain markets (>97¢) — trivial to guess
+    if fav_price >= 97:
+        continue
+
     # election results should show actual election date, not settlement — shift 2027 → 2026
     # Kalshi sets expiration to settlement (~Jan/Feb 2027) but game should show Nov 03, 26
     _ticker_up = (ev.get("event_ticker") or "").upper()
@@ -694,6 +698,9 @@ for p in pool:
     exp = p.get("expiration","")
     if exp.startswith("2027-") and any(k in tk for k in ("KXMIDTERM","KXAKMOV","HOUSE","KXHOUSE","CONTROLH","MOV","VOTETURN")):
         p["expiration"] = "2026-" + exp[5:]
+
+# filter near-certain bunched and any residual ≥97¢ (carry-through for aggregated and stragglers)
+pool = [p for p in pool if p.get("price", 0) < 97]
 
 pool.sort(key=lambda x: x["event_ticker"])
 
