@@ -133,7 +133,7 @@ body{background:#fff;color:#121213}
 
 <script>
 const TODAY_ISO = new Date().toISOString().slice(0,10);
-const APP_VERSION = "2026-08-07-3911f37"; // bump on each deploy to bust Pages cache
+const APP_VERSION = "2026-08-07-perufix1"; // bump on each deploy to bust Pages cache
 const MAX_GUESSES = 10;
 let POOL = [];
 let TARGET = null;
@@ -489,22 +489,22 @@ async function loadPool(){
         }
         if(!found){
           const countries=["ARGENTINA","BRAZIL","BULGARIA","CAPE VERDE","ESTONIA","FRANCE","GHANA","HUNGARY","MOLDOVA","MONGOLIA","PHILIPPINES","SOUTH KOREA","WORLD","EU","UK","CANADA","MEXICO","GERMANY","JAPAN","KOREA","TURKEY","ZAMBIA","PERU","MALAYSIA","SWEDEN","AUSTRALIA","INDIA","ROMANIA","VENEZUELA","GAMBIA","GUATEMALA","AFRICA","VATICAN","EGYPT","YEMEN","ISRAEL","SAUDI ARABIA","SAUDI","QATAR","SYRIA","PANAMA","TAIWAN","NORTH KOREA","CHINA","IRAN","RUSSIA","UKRAINE","PALESTINE","GAZA"];
-          for(const c of countries){ if(text.includes(c)){ found=(c==="WORLD"?"World":c==="EU"?"EU":c.charAt(0)+c.slice(1).toLowerCase()); break; } }
+          for(const c of countries){ const esc=c.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); if(new RegExp(`\\b${esc}\\b`).test(text)){ found=(c==="WORLD"?"World":c==="EU"?"EU":c.charAt(0)+c.slice(1).toLowerCase()); break; } }
         }
         if(!found){
           const aliasMap={"FRENCH":"France","GERMAN":"Germany","MECKLENBURG":"Germany","TURKISH":"Turkey","TURKEY":"Turkey","ZAMBIAN":"Zambia","ZAMBIA":"Zambia","PERUVIAN":"Peru","LIMA":"Peru","MALAYSIAN":"Malaysia","MALAYSIA":"Malaysia","SWEDISH":"Sweden","SWEDEN":"Sweden","SCOTTISH":"Uk","SCOTLAND":"Uk","GAMBIAN":"Gambia","GAMBIA":"Gambia","GUATEMALAN":"Guatemala","GUATEMALA":"Guatemala","ALBERTA":"Canada","QUEBEC":"Canada","VANCOUVER":"Canada","LONDON":"Uk","CLACTON":"Uk","ISLE OF MAN":"Uk","BURNHAM":"Uk","HORMUZ":"Iran","BAB EL":"Yemen","SUEZ":"Egypt","AUSTRALIAN":"Australia","AFRICAN":"Africa","AFRICA":"Africa","VATICAN":"Vatican","POPE":"Vatican","INDIAN":"India","ROMANIAN":"Romania","VENEZUELAN":"Venezuela","GUAM":"World"};
-          for(const [k,v] of Object.entries(aliasMap)){ if(text.includes(k)){ found=v; break; } }
+          for(const [k,v] of Object.entries(aliasMap)){ const esc=k.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); if(new RegExp(`\\b${esc}\\b`).test(text)){ found=v; break; } }
         }
         if(!found){
           // smart: everything in US should have state, national politics -> DC
           if(broad==="business"){
-            if(["BANK","LEAD"].some(k=> text.includes(k)) && text.includes("IPO")) found="NY";
+            if(["BANK","LEAD"].some(k=> new RegExp(`\\b${k}\\b`).test(text)) && /\bIPO\b/.test(text)) found="NY";
             const compMap={"AMAZON":"WA","APPLE":"CA","GOOGLE":"CA","ALPHABET":"CA","MICROSOFT":"WA","TESLA":"TX","META":"CA","NETFLIX":"CA","NVIDIA":"CA","OPENAI":"CA","ANTHROPIC":"CA","CAVA":"DC","MCDONALD'S":"IL","MCDONALDS":"IL","STARBUCKS":"WA","CHIPOTLE":"CA","BOEING":"VA","WALMART":"AR","TARGET":"MN","COSTCO":"WA","FORD":"MI","GM":"MI","EXXON":"TX","CHEVRON":"CA","JPMORGAN":"NY","GOLDMAN":"NY","DISNEY":"CA","COCA-COLA":"GA","PEPSI":"NY","PFIZER":"NY","MODERNA":"MA","UBER":"CA","LYFT":"CA","AIRBNB":"CA","SPOTIFY":"NY"};
-            if(!found){ for(const [comp,st] of Object.entries(compMap)){ if(comp==="ANTHROPIC" && ["BANK","LEAD","FINANCE"].some(k=> text.includes(k))) continue; if(text.includes(comp)){ found=st; break; } } }
-            if(!found && ["HOUSE","SENATE","PRESIDENT","CONTROL","GOVERNOR","MAYOR","CONGRESS"].some(k=> text.includes(k))) found="DC";
-            if(!found && ["LAW","LEGISLATION","BILL","BAN","RESTRICTION","REGULATION"].some(k=> text.includes(k)) && ["AI","LLM","TECH"].some(k=> text.includes(k))) found="DC";
-            if(!found && ["TECH","AI","AGI","SOFTWARE"].some(k=> text.includes(k))) found="CA";
-            if(!found && ["BANK","FINANCE","MARKET"].some(k=> text.includes(k))) found="NY";
+            if(!found){ for(const [comp,st] of Object.entries(compMap)){ const esc=comp.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); if(comp==="ANTHROPIC" && ["BANK","LEAD","FINANCE"].some(k=> new RegExp(`\\b${k}\\b`).test(text))) continue; if(new RegExp(`\\b${esc}\\b`).test(text)){ found=st; break; } } }
+            if(!found && ["HOUSE","SENATE","PRESIDENT","CONTROL","GOVERNOR","MAYOR","CONGRESS"].some(k=> new RegExp(`\\b${k}\\b`).test(text))) found="DC";
+            if(!found && ["LAW","LEGISLATION","BILL","BAN","RESTRICTION","REGULATION"].some(k=> new RegExp(`\\b${k}\\b`).test(text)) && ["AI","LLM","TECH"].some(k=> new RegExp(`\\b${k}\\b`).test(text))) found="DC";
+            if(!found && ["TECH","AI","AGI","SOFTWARE"].some(k=> new RegExp(`\\b${k}\\b`).test(text))) found="CA";
+            if(!found && ["BANK","FINANCE","MARKET"].some(k=> new RegExp(`\\b${k}\\b`).test(text))) found="NY";
             if(!found) found="DC";
           } else if(broad==="politics") found="DC";
           else if(broad==="sports") found="US";

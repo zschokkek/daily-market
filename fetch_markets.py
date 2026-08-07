@@ -386,38 +386,38 @@ def get_location(event_ticker, title, broad, raw_cat, subcategory):
         for college, st in COLLEGE_TO_STATE.items():
             if re.search(r'\b' + re.escape(college) + r'\b', text):
                 return st
-    # 5. country
+    # 5. country — use word boundaries so CLIMATE doesn't hit LIMA->Peru, INDIANA not INDIA, etc.
     for c in COUNTRY_KEYS:
-        if c in text:
+        if re.search(r'\b' + re.escape(c) + r'\b', text):
             if c=="WORLD": return "World"
             if c=="EU": return "EU"
             return c.title()
-    # 5b. demonym / city / waterway aliases -> country/continent
+    # 5b. demonym / city / waterway aliases -> country/continent — word boundaries
     for alias, canonical in COUNTRY_ALIASES.items():
-        if alias in text:
+        if re.search(r'\b' + re.escape(alias) + r'\b', text):
             return canonical
     # 6. business: try company HQ else DC for national US business
     if broad=="business":
         # finance (bank/lead IPO) should be NY even for CA companies like Anthropic
-        if any(k in text for k in ["BANK","LEAD"]) and "IPO" in text:
+        if any(re.search(r'\b'+k+r'\b', text) for k in ["BANK","LEAD"]) and re.search(r'\bIPO\b', text):
             return "NY"
         for comp, st in COMPANY_TO_STATE.items():
-            if comp in text:
+            if re.search(r'\b' + re.escape(comp) + r'\b', text):
                 # ANTHROPIC IPO-lead bank market is finance, not company HQ
-                if comp == "ANTHROPIC" and any(k in text for k in ["BANK","LEAD","FINANCE"]):
+                if comp == "ANTHROPIC" and any(re.search(r'\b'+k+r'\b', text) for k in ["BANK","LEAD","FINANCE"]):
                     continue
                 return st
         # national business still needs a state per spec - default to most common business states
-        if any(k in text for k in ["HOUSE","SENATE","PRESIDENT","CONTROL","GOVERNOR","MAYOR","CONGRESS"]):
+        if any(re.search(r'\b'+k+r'\b', text) for k in ["HOUSE","SENATE","PRESIDENT","CONTROL","GOVERNOR","MAYOR","CONGRESS"]):
             return "DC"
         # AI law exception: federal AI legislation/bans should be DC/NY not default CA (anthropic is CA unless its about laws)
-        if any(k in text for k in ["LAW","LEGISLATION","BILL","BAN","RESTRICTION","REGULATION"]) and any(k in text for k in ["AI","LLM","TECH"]):
+        if any(re.search(r'\b'+k+r'\b', text) for k in ["LAW","LEGISLATION","BILL","BAN","RESTRICTION","REGULATION"]) and any(re.search(r'\b'+k+r'\b', text) for k in ["AI","LLM","TECH"]):
             # New York already handled via STATE_FULL above, so federal -> DC
             return "DC"
         # generic US business -> try to infer from title keywords, else CA (tech) or NY (finance)
-        if any(k in text for k in ["TECH","AI","AGI","SOFTWARE"]):
+        if any(re.search(r'\b'+k+r'\b', text) for k in ["TECH","AI","AGI","SOFTWARE"]):
             return "CA"
-        if any(k in text for k in ["BANK","FINANCE","MARKET"]):
+        if any(re.search(r'\b'+k+r'\b', text) for k in ["BANK","FINANCE","MARKET"]):
             return "NY"
         return "DC"
     if broad=="sports":
@@ -430,12 +430,12 @@ def get_location(event_ticker, title, broad, raw_cat, subcategory):
     if broad=="politics":
         # national politics -> DC per spec
         for c in COUNTRY_KEYS:
-            if c in text:
+            if re.search(r'\b' + re.escape(c) + r'\b', text):
                 return c.title()
         return "DC"
     if broad=="weather":
         for city, st in CITY_TO_STATE.items():
-            if city in text:
+            if re.search(r'\b' + re.escape(city) + r'\b', text):
                 return st
         return "World"
     # fallback: everything in US should have state, so default to DC for national
