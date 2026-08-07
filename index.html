@@ -175,15 +175,13 @@ function pricesSubcat(ticker, title, sub){
   const low=(ticker+" "+title+" "+(sub||"")).toLowerCase();
   const is15 = low.includes("15 min");
   const isHourly = low.includes("hourly") || low.includes("price range");
-  let asset=null;
-  if(["btc","bitcoin"].some(k=> low.includes(k))) asset="BTC";
-  else if(["eth","ethereum"].some(k=> low.includes(k))) asset="ETH";
-  else if(["sol","solana"].some(k=> low.includes(k))) asset="SOL";
-  else if(["gold","xau"].some(k=> low.includes(k))) asset="GOLD";
-  else if(["bnb"].some(k=> low.includes(k))) asset="BNB";
-  else if(["hype"].some(k=> low.includes(k))) asset="HYPE";
-  if(asset && is15) return `${asset} 15M`;
-  if(asset && isHourly) return `${asset} 1H`;
+  if(["gold","xau"].some(k=> low.includes(k))){
+    if(is15) return "GOLD 15M";
+    if(isHourly) return "GOLD 1H";
+  }
+  if(is15 || isHourly){
+    if(["btc","eth","sol","xrp","doge","bitcoin","ethereum","solana","crypto","bnb","hype"].some(k=> low.includes(k))) return "crypto";
+  }
   if(["btc","eth","sol","xrp","doge","bitcoin","ethereum","solana","crypto"].some(k=> low.includes(k))) return "crypto";
   return "CMDTY";
 }
@@ -569,9 +567,9 @@ async function loadPool(){
     }
     if(fixed) console.log(`[overrides] applied ${fixed} pool tag fixes`);
   }
-  // strip price targets from 15M/1H display — e.g. "BTC 15 min · $64,965.53 target" -> "BTC 15 Min"
+  // strip price targets from 15M/1H display — strip by name pattern (now crypto grouped, so check name not subcat)
   for(const p of POOL){
-    if(["BTC 15M","ETH 15M","GOLD 15M","SOL 15M","BNB 15M","HYPE 15M","BTC 1H","ETH 1H","SOL 1H","BNB 1H","HYPE 1H","GOLD 1H"].includes(p.subcat)){
+    if(p.broad==="prices" && (p.name.toLowerCase().includes("15 min") || p.name.toLowerCase().includes("price range"))){
       if(p.name && p.name.includes(" · ")){
         p.name = p.name.split(" · ")[0].trim();
         if(p.name.toLowerCase().includes("15 min")) p.name = p.name.replace(/15 min/i,"15 Min");

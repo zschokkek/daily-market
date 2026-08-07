@@ -18,7 +18,7 @@ Market Atlas: https://api.elections.kalshi.com/trade-api/v2
 Strikes = len(event.markets)
 Volume = sum(market.volume) across event
 """
-import json, urllib.request, datetime, hashlib
+import json, urllib.request, datetime, hashlib, re
 
 BASE = "https://api.elections.kalshi.com/trade-api/v2"
 
@@ -38,7 +38,7 @@ def fetch_all_events():
         cursor=data.get("cursor")
         print(f"  events page {page}: +{len(batch)} total {len(events)} cursor={'yes' if cursor else 'no'}")
         if not cursor or not batch: break
-        if page>=30: break
+        if page>=100: break
     return events
 
 BROAD_ORDER=["sports","politics","business","prices","weather","culture"]
@@ -82,21 +82,16 @@ def to_broad(category, subcategory, ticker, title):
 
 def prices_subcat(ticker, title, subcategory):
     low=(ticker+" "+title+" "+(subcategory or "")).lower()
-    # 15 min / hourly as own subcats — e.g., Bitcoin 15 Min, Gold 1 Hour
+    # 15 min / hourly as own subcats — but BTC/ETH/SOL just grouped as crypto (per user: too specific)
     is_15 = "15 min" in low
     is_hourly = "hourly" in low or "price range" in low
-    # detect asset
-    asset = None
-    if any(k in low for k in ["btc","bitcoin"]): asset="BTC"
-    elif any(k in low for k in ["eth","ethereum"]): asset="ETH"
-    elif any(k in low for k in ["sol","solana"]): asset="SOL"
-    elif any(k in low for k in ["gold","xau"]): asset="GOLD"
-    elif any(k in low for k in ["bnb"]): asset="BNB"
-    elif any(k in low for k in ["hype"]): asset="HYPE"
-    if asset and is_15:
-        return f"{asset} 15M"
-    if asset and is_hourly:
-        return f"{asset} 1H"
+    # Gold stays distinct (Gold 15M / Gold 1H), crypto 15M/1H just map to crypto
+    if any(k in low for k in ["gold","xau"]):
+        if is_15: return "GOLD 15M"
+        if is_hourly: return "GOLD 1H"
+    if is_15 or is_hourly:
+        if any(k in low for k in ["btc","eth","sol","xrp","doge","bitcoin","ethereum","solana","crypto","bnb","hype"]):
+            return "crypto"
     if any(k in low for k in ["btc","eth","sol","xrp","doge","bitcoin","ethereum","solana","crypto"]):
         return "crypto"
     return "CMDTY"
@@ -670,9 +665,26 @@ for ev in events:
         detail = f"{raw_cat} · {sub_for_pool}" if sub and sub!=raw_cat else raw_cat or broad
         detail = detail.strip()
 
-    # filter near-certain markets (>97¢) — trivial to guess, but exempt multi-strike Rotten Tomatoes (Above 40 always 98¢, real contest is at 60-85)
-    if fav_price >= 97 and not (broad=="culture" and sub_for_pool=="FILM" and "rotten" in (ev.get("title","") or "").lower() and strikes>=10):
-        continue
+    # filter near-certain markets (>97¢) — trivial to guess, but exempt multi-strike (Above 40 always 98¢, real contest is at 60-85)
+    # for 10+ strikes, max fav is low threshold (~98), so check median not max
+    _price_filtered=False
+    if fav_price >= 97:
+        if broad=="culture" and sub_for_pool=="FILM" and "rotten" in (ev.get("title","") or "").lower() and strikes>=10:
+            _price_filtered=False
+        elif strikes>=10:
+            # multi-winner (golf 153, mayor 10) — median should not be 97
+            mids=[]
+            for mm in markets:
+                b=float(mm.get("yes_bid_dollars") or 0); a=float(mm.get("yes_ask_dollars") or 0); last=float(mm.get("last_price_dollars") or 0)
+                mid=(b+a)/2 if b and a else (b or a or last)
+                mids.append(mid*100)
+            mids.sort()
+            median=mids[len(mids)//2]
+            _price_filtered = median>=97
+        else:
+            _price_filtered=True
+        if _price_filtered:
+            continue
 
     # election results should show actual election date, not settlement — shift 2027 → 2026
     # Kalshi sets expiration to settlement (~Jan/Feb 2027) but game should show Nov 03, 26
@@ -996,22 +1008,26 @@ for p in pool:
     if exp.startswith("2027-") and any(k in tk for k in ("KXMIDTERM","KXAKMOV","HOUSE","KXHOUSE","CONTROLH","MOV","VOTETURN")):
         p["expiration"] = "2026-" + exp[5:]
 
-# strip price targets from 15min/hourly display names — keep as clean "BTC 15 Min" / "Gold 1 Hour" per request
+# strip price targets from 15min/hourly display names — keep as clean "BTC 15 Min" etc (now 15M/1H mostly map to crypto, but strip by name pattern)
 for p in pool:
-    if p.get("subcat") in ("BTC 15M","ETH 15M","GOLD 15M","SOL 15M","BNB 15M","HYPE 15M","BTC 1H","ETH 1H","SOL 1H","BNB 1H","HYPE 1H","GOLD 1H"):
-        # e.g. "BTC 15 min · $64,965.53 target" -> "BTC 15 Min"
-        name = p.get("name","")
-        if " · " in name:
-            p["name"] = name.split(" · ")[0].strip()
-            # normalize casing: "BTC 15 min" -> "BTC 15 Min"
-            if "15 min" in p["name"].lower():
-                p["name"] = p["name"].replace("15 min","15 Min").replace("15 Min","15 Min")
-        # also clean price_label that is the target strike — hide for 15M/1H, keep only odds
-        # price_label like "Above 64965.53" or "Target Price: $..." or "$64,900 to ..." is the strike — hide
-        p["price_label"] = ""
+    if p.get("broad")=="prices" and ("15 min" in p.get("name","").lower() or "price range" in p.get("name","").lower()):
+        sub = p.get("subcat","")
+        # crypto 15M/1H now grouped as crypto, gold stays GOLD 15M — but strip name for all short-term
+        is_short = "15 min" in p.get("name","").lower() or "price range" in p.get("name","").lower()
+        if is_short or p.get("subcat") in ("BTC 15M","ETH 15M","GOLD 15M","SOL 15M","BNB 15M","HYPE 15M","BTC 1H","ETH 1H","SOL 1H","BNB 1H","HYPE 1H","GOLD 1H"):
+            # e.g. "BTC 15 min · $64,965.53 target" -> "BTC 15 Min"
+            name = p.get("name","")
+            if " · " in name:
+                p["name"] = name.split(" · ")[0].strip()
+                # normalize casing: "BTC 15 min" -> "BTC 15 Min"
+                if "15 min" in p["name"].lower():
+                    p["name"] = p["name"].replace("15 min","15 Min").replace("15 Min","15 Min")
+            # also clean price_label that is the target strike — hide for 15M/1H, keep only odds
+            # price_label like "Above 64965.53" or "Target Price: $..." or "$64,900 to ..." is the strike — hide
+            p["price_label"] = ""
 
-# filter near-certain bunched and any residual ≥97¢ (carry-through, but keep Rotten Tomatoes multi-strike)
-pool = [p for p in pool if p.get("price", 0) < 97 or (p.get("broad")=="culture" and p.get("subcat")=="FILM" and "rotten" in (p.get("name","") or "").lower())]
+# filter near-certain bunched and any residual ≥97¢ (carry-through, but keep 10+ strike multi-winner and Rotten Tomatoes)
+pool = [p for p in pool if p.get("price", 0) < 97 or p.get("strikes",0)>=10 or (p.get("broad")=="culture" and p.get("subcat")=="FILM" and "rotten" in (p.get("name","") or "").lower())]
 
 # apply manual pool overrides (dev tool) — so you can fix my tags without repulling everything
 try:
