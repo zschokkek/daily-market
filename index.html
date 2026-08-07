@@ -277,6 +277,7 @@ async function loadPool(){
       let vol = m.volume || m.volume_24h || 0;
       vol = Number(vol)||0;
       if(vol===0) vol = Math.abs(hashStr(m.ticker||"") % 80000)+5000;
+      if(vol < 10000) continue;
       let name=(m.title||m.ticker||"").slice(0,90);
       livePool.push({name, broad, subcat: subForPool, category: detail, raw_category: raw||broad, strikes, expiration: exp, expDay, volume: Math.round(vol), ticker: m.ticker, event_ticker: m.event_ticker});
     }
@@ -308,6 +309,7 @@ async function loadPool(){
         let vol=mk.volume||mk.volume_24h||0;
         vol=Number(vol)||0;
         if(vol===0) vol=Math.abs(hashStr(mk.ticker||name)%60000)+3000;
+        if(vol < 10000) continue; // filter <10k volume
         const broad=toBroad(raw, sub, mk.ticker||"", name);
         let detail, subFinal;
         if(broad==="sports"){ let lg=sportsSubcat(mk.ticker||"", name, sub); detail=`Sports · ${lg}`; subFinal=lg; }
@@ -393,7 +395,8 @@ async function loadPool(){
           const m=text.match(/\b([A-Z]{2})-?\d{1,2}\b/);
           if(m && states.includes(m[1])) found=m[1];
         }
-        if(!found) for(const s of states){ if(new RegExp(`\\b${s}\\b`).test(text)){ found=s; break; } }
+        // disabled generic \bIN\b false positive (" in Q2" -> IN) — use district pattern + city/company instead
+        // if(!found) for(const s of states){ if(new RegExp(`\\b${s}\\b`).test(text)){ found=s; break; } }
         if(!found){
           const cityMap={ "NEW YORK":"NY","NYC":"NY","LOS ANGELES":"CA","CHICAGO":"IL","BOSTON":"MA","PITTSBURGH":"PA","PHILADELPHIA":"PA","MIAMI":"FL","ATLANTA":"GA","SEATTLE":"WA","SAN FRANCISCO":"CA","HOUSTON":"TX","DALLAS":"TX","WASHINGTON":"DC","DETROIT":"MI","CLEVELAND":"OH","DENVER":"CO","PHOENIX":"AZ"};
           for(const [city,st] of Object.entries(cityMap)){ if(text.includes(city)){ found=st; break; } }
@@ -405,7 +408,7 @@ async function loadPool(){
         if(!found){
           // smart: everything in US should have state, national politics -> DC
           if(broad==="business"){
-            const compMap={"AMAZON":"WA","APPLE":"CA","GOOGLE":"CA","ALPHABET":"CA","MICROSOFT":"WA","TESLA":"TX","META":"CA","NETFLIX":"CA","NVIDIA":"CA","OPENAI":"CA"};
+            const compMap={"AMAZON":"WA","APPLE":"CA","GOOGLE":"CA","ALPHABET":"CA","MICROSOFT":"WA","TESLA":"TX","META":"CA","NETFLIX":"CA","NVIDIA":"CA","OPENAI":"CA","CAVA":"DC","MCDONALD'S":"IL","MCDONALDS":"IL","STARBUCKS":"WA","CHIPOTLE":"CA","BOEING":"VA","WALMART":"AR","TARGET":"MN","COSTCO":"WA","FORD":"MI","GM":"MI","EXXON":"TX","CHEVRON":"CA","JPMORGAN":"NY","GOLDMAN":"NY","DISNEY":"CA","COCA-COLA":"GA","PEPSI":"NY","PFIZER":"NY","MODERNA":"MA","UBER":"CA","LYFT":"CA","AIRBNB":"CA","SPOTIFY":"NY"};
             for(const [comp,st] of Object.entries(compMap)){ if(text.includes(comp)){ found=st; break; } }
             if(!found && ["HOUSE","SENATE","PRESIDENT","CONTROL","GOVERNOR","MAYOR","CONGRESS"].some(k=> text.includes(k))) found="DC";
             if(!found && ["TECH","AI","AGI","SOFTWARE"].some(k=> text.includes(k))) found="CA";
