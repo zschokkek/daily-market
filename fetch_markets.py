@@ -116,10 +116,16 @@ def get_sport_family(sub):
     if "NHL" in s: return "hockey"
     if any(k in s for k in ["SOCCER","MLS","EPL","LEAGUESCUP","UCL","UECL","COPPAITALIA","UEL","COPADOBRASIL","LALIGA","BUNDESLIGA","SERIEA","LIGUE1","CONMEBOL","COPAAMERICA","LEAGUE","CUP"]): return "soccer"
     if any(k in s for k in ["GOLF","PGA","HOLEIN","WYNDHAM","KFT","KORN","LPGA"]): return "golf"
-    if any(k in s for k in ["TENNIS","ATP","WTA"]): return "tennis"
-    if any(k in s for k in ["MMA","UFC","BOXING","WBC"]): return "combat"
+    if any(k in s for k in ["TENNIS","ATP","WTA","WTAFINALS"]): return "tennis"
+    if any(k in s for k in ["MMA","UFC","BOXING","WBC","FURY","JOSHUA"]): return "combat"
     if any(k in s for k in ["ESPORTS","LOL","CS2"]): return "esports"
     if any(k in s for k in ["F1","NASCAR","INDYCAR","MOTOGP","RACING"]): return "racing"
+    if any(k in s for k in ["CHESS","FIDE"]): return "chess"
+    if any(k in s for k in ["RUGBY","NRL"]): return "rugby"
+    if any(k in s for k in ["DARTS","PDC"]): return "darts"
+    if any(k in s for k in ["WC","WCHOST","BALLONDOR","FIFA","COPPA","DFB","PREMIER","BRASILEIRO","LIGAMX"]): return "soccer"
+    if any(k in s for k in ["ARODG","KELCE","QBWEEK","STARTING","COACHONDATE"]): return "football"
+    if any(k in s for k in ["LBJ","LEBRON"]): return "basketball"
     return s
 
 def sports_subcat(ticker, title, subcategory):

@@ -716,9 +716,15 @@ function getSportFamily(sub){
   if(["SOCCER","MLS","EPL","LEAGUESCUP","UCL","UECL","COPPAITALIA","UEL","COPADOBRASIL","LALIGA","BUNDESLIGA","SERIEA","LIGUE1","CONMEBOL","COPAAMERICA"].some(k=> s.includes(k)) || s.includes("SOCCER") || s.includes("LEAGUE") || s.includes("CUP")) return "soccer";
   if(["GOLF","PGA","HOLEIN","WYNDHAM","KFT","KORN","LPGA"].some(k=> s.includes(k)) || s.includes("GOLF") || s.includes("PGA") || s.includes("HOLEIN") || s.includes("WYNDHAM") || s.includes("KFT") || s.includes("KORN") || s.includes("LPGA")) return "golf";
   if(["TENNIS","ATP","WTA","WTAFINALS"].some(k=> s.includes(k)) || s.includes("TENN") || s.includes("ATP") || s.includes("WTA")) return "tennis";
-  if(["MMA","UFC","BOXING","WBC"].some(k=> s.includes(k)) || s.includes("MMA") || s.includes("UFC")) return "combat";
+  if(["MMA","UFC","BOXING","WBC","FURY","JOSHUA"].some(k=> s.includes(k)) || s.includes("MMA") || s.includes("UFC")) return "combat";
   if(["ESPORTS","LOL","CS2"].some(k=> s.includes(k)) || s.includes("ESPORT")) return "esports";
   if(["F1","NASCAR","INDYCAR","MOTOGP"].some(k=> s.includes(k)) || s.includes("RACING") || s.includes("NASCAR") || s.includes("F1")) return "racing";
+  if(["CHESS","FIDE"].some(k=> s.includes(k)) || s.includes("CHESS") || s.includes("FIDE")) return "chess";
+  if(["RUGBY","NRL"].some(k=> s.includes(k)) || s.includes("RUGBY") || s.includes("NRL")) return "rugby";
+  if(["DARTS","PDC"].some(k=> s.includes(k)) || s.includes("DARTS") || s.includes("PDC")) return "darts";
+  if(["WC","WCHOST","BALLONDOR","FIFA","COPPA","DFB","PREMIER","BRASILEIRO","LIGAMX"].some(k=> s.includes(k)) || s.includes("WC") || s.includes("WCHOST") || s.includes("BALLONDOR")) return "soccer";
+  if(["ARODG","KELCE","QBWEEK","STARTING","COACHONDATE"].some(k=> s.includes(k)) || s.includes("ARODG") || s.includes("KELCE") || s.includes("QBWEEK") || s.includes("STARTING")) return "football";
+  if(["LBJ","LEBRON"].some(k=> s.includes(k)) || s.includes("LBJ") || s.includes("LEBRON")) return "basketball";
   return s; // fallback unique
 }
 function feedback(guess, target){
