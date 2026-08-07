@@ -133,6 +133,18 @@ body{background:#fff;color:#121213}
 
 <script>
 const TODAY_ISO = new Intl.DateTimeFormat('en-CA', {timeZone:'America/New_York', year:'numeric', month:'2-digit', day:'2-digit'}).format(new Date());
+// mobile: drop e.g. "A's @ Red Sox" from search bar placeholder
+(() => {
+  const input = document.getElementById('guess-input');
+  if (!input) return;
+  const desktopPH = 'Search any market \u2014 e.g. "A\'s @ Red Sox"';
+  const mobilePH = 'Search any market';
+  const mq = window.matchMedia('(max-width: 640px)');
+  const sync = () => { input.placeholder = mq.matches ? mobilePH : desktopPH; };
+  sync();
+  if (mq.addEventListener) mq.addEventListener('change', sync);
+  else if (mq.addListener) mq.addListener(sync);
+})();
 const APP_VERSION = "2026-08-07-hidden2"; // bump on each deploy to bust Pages cache
 const MAX_GUESSES = 10;
 let POOL = [];
