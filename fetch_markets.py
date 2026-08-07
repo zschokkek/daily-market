@@ -449,8 +449,8 @@ print(f"Fetching — today {today_iso} now {now.isoformat()}")
 
 events = fetch_all_events()
 print(f"Fetched {len(events)} events")
-# Also fetch sports + short-term crypto price series directly to ensure today's games/prices beyond cursor
-for series in ["KXMLBGAME","KXWNBAGAME","KXLOLGAME","KXNFLGAME","KXNBA","KXSOCCER","KXGOLF","KXBTC","KXBTCD","KXETH","KXETHD","KXSOL","KXSOLE","KXBNB","KXHYPE"]:
+# Also fetch sports + short-term crypto + Rotten Tomatoes film series directly to ensure beyond cursor
+for series in ["KXMLBGAME","KXWNBAGAME","KXLOLGAME","KXNFLGAME","KXNBA","KXSOCCER","KXGOLF","KXBTC","KXBTCD","KXETH","KXETHD","KXSOL","KXSOLE","KXBNB","KXHYPE","KXRT"]:
     try:
         url=f"{BASE}/events?series_ticker={series}&status=open&with_nested_markets=true&limit=100"
         data=fetch_json(url)
@@ -655,8 +655,8 @@ for ev in events:
         detail = f"{raw_cat} · {sub_for_pool}" if sub and sub!=raw_cat else raw_cat or broad
         detail = detail.strip()
 
-    # filter near-certain markets (>97¢) — trivial to guess
-    if fav_price >= 97:
+    # filter near-certain markets (>97¢) — trivial to guess, but exempt multi-strike Rotten Tomatoes (Above 40 always 98¢, real contest is at 60-85)
+    if fav_price >= 97 and not (broad=="culture" and sub_for_pool=="FILM" and "rotten" in (ev.get("title","") or "").lower() and strikes>=10):
         continue
 
     # election results should show actual election date, not settlement — shift 2027 → 2026
@@ -981,8 +981,8 @@ for p in pool:
     if exp.startswith("2027-") and any(k in tk for k in ("KXMIDTERM","KXAKMOV","HOUSE","KXHOUSE","CONTROLH","MOV","VOTETURN")):
         p["expiration"] = "2026-" + exp[5:]
 
-# filter near-certain bunched and any residual ≥97¢ (carry-through for aggregated and stragglers)
-pool = [p for p in pool if p.get("price", 0) < 97]
+# filter near-certain bunched and any residual ≥97¢ (carry-through, but keep Rotten Tomatoes multi-strike)
+pool = [p for p in pool if p.get("price", 0) < 97 or (p.get("broad")=="culture" and p.get("subcat")=="FILM" and "rotten" in (p.get("name","") or "").lower())]
 
 pool.sort(key=lambda x: x["event_ticker"])
 
