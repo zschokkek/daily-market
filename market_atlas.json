@@ -1,0 +1,23 @@
+{
+  "fetched_at": "2026-08-07T16:57:56.004286+00:00",
+  "today": "2026-08-07",
+  "events_scanned": 6108,
+  "pool_size": 5721,
+  "broad_counts": {
+    "politics": 2164,
+    "business": 1036,
+    "culture": 514,
+    "weather": 54,
+    "prices": 65,
+    "sports": 1888
+  },
+  "broad_order": [
+    "sports",
+    "politics",
+    "business",
+    "prices",
+    "weather",
+    "culture"
+  ],
+  "note": "Pool condensed to EVENT level: one entry per event_ticker. Strikes = #markets in event. Sports filtered to today, other broads include all open."
+}

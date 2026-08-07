@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Kalshi Wordle</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;800;900&family=JetBrains+Mono:wght@500;700&family=Libre+Franklin:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={theme:{extend:{fontFamily:{sans:['Libre Franklin','Inter','system-ui','sans-serif'],mono:['JetBrains Mono','monospace']}}}}</script>
+<style>
+/* Wordle sleek — rigid alignment */
+body{background:#fff;color:#121213}
+.mono{font-variant-numeric:tabular-nums}
+.tile{border:2px solid #d3d6da;background:#fff;transition:background 0.15s, border-color 0.15s, color 0.15s; height:78px; display:flex; flex-direction:column; justify-content:center; overflow:hidden}
+.tile .line-clamp-2{ display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden }
+.tile.green{background:#6aaa64;border-color:#6aaa64;color:#fff}
+.tile.yellow{background:#c9b458;border-color:#c9b458;color:#fff}
+.tile.gray{background:#787c7e;border-color:#787c7e;color:#fff}
+.tile.wrong{background:#fff;border-color:#d3d6da;color:#121213}
+#board > div{ align-items:stretch }
+.cell{border-radius:0}
+@media(max-width:640px){.tile{height:72px; padding:8px 6px}}
+.autocomplete{max-height:320px;overflow:auto;box-shadow:0 8px 24px rgba(0,0,0,.12)}
+</style>
+</head>
+<body class="font-sans antialiased min-h-screen flex flex-col">
+<!-- Wordle header -->
+<header class="border-b border-[#d3d6da] sticky top-0 bg-white z-40">
+  <div class="max-w-[680px] mx-auto h-[64px] flex items-center justify-center relative px-4">
+    <button id="how-btn" class="absolute left-4 w-8 h-8 grid place-items-center text-[18px]">?</button>
+    <h1 class="text-[34px] md:text-[38px] font-black tracking-[0.02em]">KALSHI WORDLE</h1>
+    <button id="share-btn" class="hidden absolute right-4 text-[12px] font-bold border border-[#121213] px-3 py-1">SHARE</button>
+  </div>
+</header>
+
+<main class="max-w-[720px] w-full mx-auto px-3 md:px-4 py-4 flex-1 flex flex-col gap-4">
+
+  <!-- input — large Wordle style -->
+  <div class="flex flex-col gap-2">
+    <div class="flex gap-2">
+      <div class="flex-1 relative">
+        <input id="guess-input" placeholder="Search any market — e.g. &quot;A's @ Red Sox&quot;" class="w-full h-[52px] px-4 rounded-none border-2 border-[#d3d6da] text-[18px] font-bold placeholder:text-[#9ca3af] placeholder:font-medium focus:outline-none focus:border-[#121213]" autocomplete="off"/>
+        <div id="autocomplete" class="hidden absolute left-0 right-0 top-[56px] bg-white border-2 border-[#121213] z-30"></div>
+      </div>
+      <button id="guess-btn" class="h-[52px] px-7 bg-[#121213] text-white text-[15px] font-black tracking-[0.08em]">GUESS</button>
+    </div>
+    <div class="flex flex-wrap gap-2 text-[11px] font-bold tracking-wide text-[#787c7e]">
+      <span>10 TRIES</span><span class="text-[#d3d6da]">•</span><span id="tries-left" class="text-[#121213]">10 LEFT</span><span class="text-[#d3d6da]">•</span><span>COLUMNS: NAME · CATEGORY · STRIKES · EXPIRATION · VOLUME</span>
+      <button id="giveup" class="ml-auto underline">Give up</button>
+    </div>
+  </div>
+
+  <!-- headers — split category into two + location -->
+  <div class="grid grid-cols-[1.5fr_0.5fr_0.55fr_0.5fr_0.4fr_0.6fr_0.55fr] gap-1.5 px-1">
+    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213]">MARKET</div>
+    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center">CATEGORY</div>
+    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center">DETAIL</div>
+    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center">LOC</div>
+    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center">STRIKES</div>
+    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center">EXPIRES</div>
+    <div class="text-[11px] font-black tracking-[0.14em] text-[#121213] text-center">VOLUME</div>
+  </div>
+
+  <div id="board" class="flex flex-col gap-1.5 min-h-[140px]">
+    <div id="empty" class="border-2 border-dashed border-[#d3d6da] py-10 text-center">
+      <div class="text-[18px] font-black">NO GUESSES YET</div>
+      <div class="text-[13px] text-[#787c7e] font-medium mt-1 flex items-center justify-center gap-2"><span class="inline-block w-3 h-3 bg-[#6aaa64]"></span> <span class="inline-block w-3 h-3 bg-[#c9b458]"></span> <span class="inline-block w-3 h-3 bg-[#787c7e]"></span> <span class="ml-2">▲ ▼ = higher / lower</span></div>
+    </div>
+  </div>
+
+  <div id="result" class="hidden border-2 border-[#121213] p-4 text-center bg-[#f9fafb]">
+    <div id="result-title" class="text-[22px] font-black"></div>
+    <div id="result-sub" class="text-[14px] font-medium text-[#374151] mt-1 leading-snug"></div>
+    <div class="flex gap-2 justify-center mt-3">
+      <button id="result-share" class="h-10 px-6 bg-[#6aaa64] text-white text-[13px] font-black tracking-wide">SHARE</button>
+      <button id="result-reveal" class="h-10 px-6 border-2 border-[#121213] bg-white text-[13px] font-black">REVEAL</button>
+    </div>
+  </div>
+
+</main>
+
+<footer class="border-t border-[#d3d6da] mt-4">
+  <div class="max-w-[720px] mx-auto px-4 py-3 flex flex-wrap gap-2 text-[11px] font-medium text-[#787c7e]">
+    <span>Non-official fan project</span><span>•</span><a href="https://kalshi.com/markets" target="_blank" class="underline">kalshi.com</a><span>•</span><span id="footer-pool">—</span>
+  </div>
+</footer>
+
+<div id="toast" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#121213] text-white text-[13px] font-black tracking-wide px-5 py-3 rounded-full shadow-lg z-50 transition-opacity">Copied</div>
+<div id="modal" class="hidden fixed inset-0 bg-white/90 z-50 grid place-items-center p-4">
+  <div class="bg-white border-2 border-[#121213] max-w-[520px] w-full p-6">
+    <div class="flex items-center justify-between">
+      <h2 class="text-[18px] font-black">HOW TO PLAY</h2>
+      <button id="modal-close" class="w-8 h-8 border border-[#d3d6da] grid place-items-center font-bold">×</button>
+    </div>
+    <ol class="list-decimal pl-5 text-[14px] leading-relaxed mt-3 space-y-2 font-medium">
+      <li>Guess the secret Kalshi market of the day.</li>
+      <li>Pool is <b>every Sports market expiring today</b> + <b>any LIVE market</b>. We load <b>all</b> of them (check the banner).</li>
+      <li>Five broad categories: <b>sports</b> · <b>politics</b> · <b>business</b> · <b>prices</b> · <b>weather</b> (split out above).</li>
+      <li>After each guess: <span class="inline-block w-3 h-3 bg-[#6aaa64] align-middle"></span> green = exact, <span class="inline-block w-3 h-3 bg-[#c9b458] align-middle"></span> yellow = close, <span class="inline-block w-3 h-3 bg-[#787c7e] align-middle"></span> gray = miss. Arrows = higher/lower/earlier/later.</li>
+      <li>10 tries. Share your grid.</li>
+    </ol>
+    <div class="grid grid-cols-3 gap-2 mt-4 text-center text-[11px] font-black tracking-wide">
+      <div class="tile green py-3">GREEN<br><span class="font-medium">exact</span></div>
+      <div class="tile yellow py-3">YELLOW<br><span class="font-medium">close</span></div>
+      <div class="tile gray py-3">GRAY<br><span class="font-medium">miss</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const TODAY_ISO = new Date().toISOString().slice(0,10);
+const MAX_GUESSES = 10;
+let POOL = [];
+let TARGET = null;
+
+// broad helpers — must match fetch_markets.py
+const BROAD_ORDER = ["sports","politics","business","prices","weather","culture"];
+const BROAD_LABEL = {sports:"SPORTS", politics:"POLITICS", business:"BUSINESS", prices:"PRICES", weather:"WEATHER", culture:"CULTURE"};
+const BROAD_COLOR = {sports:"#0ea5e9", politics:"#8b5cf6", business:"#f59e0b", prices:"#10b981", weather:"#06b6d4", culture:"#ec4899"};
+
+function toBroad(rawCat, sub, ticker, title){
+  const low = ((rawCat||"")+" "+(sub||"")+" "+(ticker||"")+" "+(title||"")).toLowerCase();
+  if((rawCat||"")==="Climate and Weather" || low.includes("weather") || low.includes("temperature") || low.includes("high temp")) return "weather";
+  if((rawCat||"")==="Sports") return "sports";
+  if((rawCat||"")==="Entertainment" || ["music","film","movie","tv","celeb","oscar","grammy","emmy","album","song"].some(k=> low.includes(k))) return "culture";
+  let isPrice=false;
+  const titleTicker=(ticker+" "+title);
+  if(titleTicker.includes("$") || low.includes("target price") || low.includes("price of")) isPrice=true;
+  else if(low.includes("price") && ["above","below","close","target"].some(k=> low.includes(k))) isPrice=true;
+  else if(["btc","bitcoin","eth ","ethereum","sol ","solana","xrp","doge","crypto"].some(k=> low.includes(k)) && ["above","below","price","close","$"].some(k=> low.includes(k))) isPrice=true;
+  else if(["s&p","nasdaq"].some(k=> low.includes(k)) && ["above","below","close","$","price"].some(k=> low.includes(k))) isPrice=true;
+  else if(["crude oil","gold price","silver price","corn price","wheat price"].some(k=> low.includes(k)) && ["price","$","above","below"].some(k=> low.includes(k))) isPrice=true;
+  if(isPrice) return "prices";
+  if(["Politics","Elections","World"].includes(rawCat)) return "politics";
+  if(["Economics","Companies","Science and Technology","Social","Health","Transportation","Financials"].includes(rawCat)) return "business";
+  return "business";
+}
+function cultureSubcat(ticker, title, sub){
+  const low=(ticker+" "+title+" "+(sub||"")).toLowerCase();
+  if(["music","song","album","grammy","spotify"].some(k=> low.includes(k))) return "MUSIC";
+  if(["film","movie","cinema","oscar","box office"].some(k=> low.includes(k))) return "FILM";
+  if(["tv","television","show","series","celeb","kardashian","emmy","netflix","hbo"].some(k=> low.includes(k))) return "TV & CELEB";
+  return "MUSIC";
+}
+function pricesSubcat(ticker, title, sub){
+  const low=(ticker+" "+title+" "+(sub||"")).toLowerCase();
+  if(["btc","eth","sol","xrp","doge","bitcoin","ethereum","solana","crypto"].some(k=> low.includes(k))) return "crypto";
+  return "CMDTY";
+}
+function businessSubcat(ticker, title, sub){
+  const low=(ticker+" "+title+" "+(sub||"")).toLowerCase();
+  if(["tesla","spacex","apple","google","alphabet","microsoft","meta","nvidia","openai","netflix","amazon","tech","ai ","ai,","software","space x"].some(k=> low.includes(k))) return "TECH";
+  if(["bank","finance","fed","rate","gdp","inflation","economy","market"].some(k=> low.includes(k))) return "FINANCE";
+  if(["company","merger","acquisition","earnings"].some(k=> low.includes(k))) return "CORP";
+  return "CORP";
+}
+function sportsSubcat(ticker, title, sub){
+  const s=(sub||ticker||title||"").toUpperCase();
+  const t=(ticker||"").toUpperCase();
+  const tu=(title||"").toUpperCase();
+  if(s.includes("KXMLB")||t.includes("KXMLB")||tu.includes("MLB")||tu.includes("BASEBALL")) return "MLB";
+  if(s.includes("KXNFL")||t.includes("KXNFL")||tu.includes("NFL")) return "NFL";
+  if(s.includes("KXNBA")||t.includes("KXNBA")||tu.includes("NBA")&&!tu.includes("WNBA")) return "NBA";
+  if(s.includes("KXWNB")||t.includes("KXWNB")||tu.includes("WNBA")) return "WNBA";
+  if(s.includes("KXLOL")||t.includes("KXLOL")||tu.includes("LEAGUE OF LEGENDS")) return "Esports";
+  if(s.includes("KXNHL")||t.includes("KXNHL")||tu.includes("NHL")||tu.includes("HOCKEY")) return "NHL";
+  if(s.includes("KXSOCC")||s.includes("SOCCER")||tu.includes("SOCCER")||tu.includes("MLS")) return "Soccer";
+  if(s.includes("KXGOLF")||t.includes("KXGOLF")||tu.includes("GOLF")||tu.includes("PGA")) return "Golf";
+  if(s.includes("KXTENN")||tu.includes("TENNIS")) return "Tennis";
+  if(s.includes("KXUFC")||tu.includes("UFC")||tu.includes("MMA")) return "MMA";
+  if(sub) return sub.replace("KX","").replace("GAME","").slice(0,12)||"Other";
+  return "Other";
+}
+const ABBR_TAGS = {
+  "NRSC":"Republican", "NRCC":"Republican", "RNC":"Republican", "GOP":"Republican",
+  "DSCC":"Democrat", "DCCC":"Democrat", "DNC":"Democrat",
+  "FTC":"Regulators", "GDP":"Economy", "CPI":"Economy",
+  "MVP":"Award", "AL MVP":"Award", "NL MVP":"Award"
+};
+function getAbbrTags(ticker, name){
+  const up = ((ticker||"")+" "+(name||"")).toUpperCase();
+  const tags=[];
+  for(const [abbr,label] of Object.entries(ABBR_TAGS)){
+    if(up.includes(abbr)) tags.push(label);
+  }
+  return [...new Set(tags)];
+}
+const MLB_FULL={"A'S":"Athletics","ATHLETICS":"Athletics","BOS":"Boston Red Sox","BOSTON":"Boston Red Sox","NYY":"New York Yankees","NYM":"New York Mets","PIT":"Pittsburgh Pirates","PITTSBURGH":"Pittsburgh Pirates","TOR":"Toronto Blue Jays","CHC":"Chicago Cubs","CWS":"Chicago White Sox","LAD":"Los Angeles Dodgers","LAA":"Los Angeles Angels","SF":"San Francisco Giants","HOU":"Houston Astros","SEA":"Seattle Mariners","TEX":"Texas Rangers","ATL":"Atlanta Braves","MIA":"Miami Marlins","PHI":"Philadelphia Phillies","WSH":"Washington Nationals","BAL":"Baltimore Orioles","TB":"Tampa Bay Rays","CIN":"Cincinnati Reds","CLE":"Cleveland Guardians","DET":"Detroit Tigers","KC":"Kansas City Royals","MIN":"Minnesota Twins","MIL":"Milwaukee Brewers","STL":"St. Louis Cardinals"};
+function expandTeamName(short){
+  if(!short.includes("vs")) return short;
+  const parts=short.split("vs").map(p=>p.trim());
+  const expanded=parts.map(p=>{
+    const key=p.replace(/['.]/g,"").trim().toUpperCase();
+    if(MLB_FULL[key]) return MLB_FULL[key];
+    for(const k in MLB_FULL){ if(key===k) return MLB_FULL[k]; }
+    return p;
+  });
+  return expanded.join(" vs ");
+}
+
+async function loadPool(){
+  let fallback=null;
+  try{ const r=await fetch('./pool.json'); if(r.ok) fallback=await r.json(); }catch(e){}
+  if(!fallback) fallback=[];
+
+  // paginate ALL markets live — no 200 cap
+  let livePool=null;
+  try{
+    const allMarkets = await fetchAllMarketsPaginated();
+    const allEvents = await fetchAllEventsPaginated(); // for strikes enrichment
+    const eventLookup=new Map();
+    for(const ev of allEvents){
+      const strikes=(ev.markets||[]).length||2;
+      const occ = ev.occurrence_datetime || (ev.markets[0]&&ev.markets[0].occurrence_datetime) || ev.expected_expiration_time || "";
+      eventLookup.set(ev.event_ticker, {strikes, raw: ev.category||"", sub: ev.subcategory||ev.series_ticker||"", title: ev.title||ev.event_ticker, occ});
+    }
+    const now=new Date();
+    const today=TODAY_ISO;
+    const tomorrow=new Date(new Date(today+"T00:00:00Z").getTime()+86400000).toISOString().slice(0,10);
+    livePool=[];
+    for(const m of allMarkets){
+      const exp=m.expected_expiration_time||m.expiration_time;
+      const occ=m.occurrence_datetime||exp;
+      if(!exp) continue;
+      const expDay=exp.slice(0,10);
+      const occDay=(occ||exp).slice(0,10);
+      let isToday=(expDay===today || occDay===today || (expDay===tomorrow && (occDay===today || occDay===tomorrow)));
+      // also check event occurrence if available
+      const info=eventLookup.get(m.event_ticker);
+      const raw = info?info.raw:"";
+      const sub = info?info.sub:"";
+      const evOcc = info?info.occ:"";
+      if(evOcc && evOcc.slice(0,10)===today) isToday=true;
+      const close=m.close_time;
+      let isLive=false;
+      try{ if(close && exp){ const ct=new Date(close), et=new Date(exp); if(ct<now && now<et) isLive=true; } }catch(e){}
+      let broad = toBroad(raw, sub, m.event_ticker||"", m.title||"");
+      if(!raw && (m.event_ticker||"").match(/^KX(M LB|NFL|NBA|NHL|SOCC|WNB|LOL|TENN|UFC|GOLF)/) || (m.event_ticker||"").includes("SPORT")){ broad="sports"; }
+      // intuitive pool = all open (sports futures like AL MVP included)
+      let include = true;
+      if(!include) continue;
+      const strikes = info?info.strikes:2;
+      let detail, subForPool;
+      if(broad==="sports"){ let lg=sportsSubcat(m.event_ticker||"", m.title||"", sub); detail=`Sports · ${lg}`; subForPool=lg; }
+      else if(broad==="prices"){ let ps=pricesSubcat(m.ticker||"", m.title||"", sub); detail=`Prices · ${ps}`; subForPool=ps; }
+      else if(broad==="culture"){ let cs=cultureSubcat(m.ticker||"", m.title||"", sub); detail=`Culture · ${cs}`; subForPool=cs; }
+      else if(broad==="business"){ let bs=businessSubcat(m.ticker||"", m.title||"", sub); subForPool=bs; detail = raw ? `${raw} · ${bs}` : `Business · ${bs}`; }
+      else if(broad==="politics"){ const up=(m.ticker||"").toUpperCase(); const pl = (up.includes("HOUSE")||up.includes("KXHOUSE")) ? "HOUSE" : "ELECT"; subForPool=pl; detail=`Politics · ${pl}`; }
+      else { subForPool=(sub||broad); detail = (raw && subForPool) ? `${raw} · ${subForPool}` : (raw||broad); }
+      let vol = m.volume || m.volume_24h || 0;
+      vol = Number(vol)||0;
+      if(vol===0) vol = Math.abs(hashStr(m.ticker||"") % 80000)+5000;
+      let name=(m.title||m.ticker||"").slice(0,90);
+      livePool.push({name, broad, subcat: subForPool, category: detail, raw_category: raw||broad, strikes, expiration: exp, expDay, volume: Math.round(vol), ticker: m.ticker, event_ticker: m.event_ticker});
+    }
+    // also scan events for yes_sub_title enrich (already covered via markets title, but add any missing)
+    for(const ev of allEvents){
+      const raw=ev.category||"";
+      const sub=ev.subcategory||ev.series_ticker||"";
+      const broadEv=toBroad(raw, sub, ev.event_ticker||"", ev.title||"");
+      const strikes=(ev.markets||[]).length||2;
+      const evOcc = ev.occurrence_datetime || (ev.markets[0]&&ev.markets[0].occurrence_datetime) || ev.expected_expiration_time || "";
+      const evOccDay = evOcc?evOcc.slice(0,10):"";
+      for(const mk of (ev.markets||[])){
+        const exp=mk.expected_expiration_time||mk.expiration_time||ev.expected_expiration_time||ev.expiration_time;
+        const occ=mk.occurrence_datetime||evOcc||exp;
+        if(!exp) continue;
+        const expDay=exp.slice(0,10);
+        const occDay=(occ||exp).slice(0,10);
+        let isToday=(expDay===today || occDay===today || (expDay===tomorrow && (occDay===today || occDay===tomorrow)) || evOccDay===today);
+        let isLive=false;
+        try{ if(mk.close_time){ const ct=new Date(mk.close_time), et=new Date(exp); if(ct<new Date() && new Date()<et) isLive=true; }}catch(e){}
+        if(mk.volume_24h && Number(mk.volume_24h)>5000 && isToday) isLive=true;
+        let include = true;
+        if(!include) continue;
+        if(livePool.some(p=>p.ticker===(mk.ticker||mk.ticker_name))) continue;
+        const title=ev.title||ev.event_ticker||"";
+        const subT=mk.yes_sub_title||mk.ticker_name||mk.ticker||"";
+        let name = (subT && !title.toLowerCase().includes(subT.toLowerCase())) ? `${title} — ${subT}` : (title||subT||mk.ticker||"");
+        name=name.slice(0,90);
+        let vol=mk.volume||mk.volume_24h||0;
+        vol=Number(vol)||0;
+        if(vol===0) vol=Math.abs(hashStr(mk.ticker||name)%60000)+3000;
+        const broad=toBroad(raw, sub, mk.ticker||"", name);
+        let detail, subFinal;
+        if(broad==="sports"){ let lg=sportsSubcat(mk.ticker||"", name, sub); detail=`Sports · ${lg}`; subFinal=lg; }
+        else if(broad==="prices"){ let ps=pricesSubcat(mk.ticker||"", name, sub); detail=`Prices · ${ps}`; subFinal=ps; }
+        else if(broad==="culture"){ let cs=cultureSubcat(mk.ticker||"", name, sub); detail=`Culture · ${cs}`; subFinal=cs; }
+        else if(broad==="business"){ let bs=businessSubcat(mk.ticker||"", name, sub); subFinal=bs; detail=(raw && bs)?`${raw} · ${bs}`: `Business · ${bs}`; }
+        else if(broad==="politics"){ const up=(mk.ticker||"").toUpperCase(); const pl=(up.includes("HOUSE")||up.includes("KXHOUSE")) ? "HOUSE" : "ELECT"; subFinal=pl; detail=`Politics · ${pl}`; }
+        else { subFinal=(sub||broad); detail=(raw && subFinal)?`${raw} · ${subFinal}`: (raw||broad); }
+        livePool.push({name, broad, subcat: subFinal, category:detail, raw_category:raw||broad, strikes, expiration:exp, expDay, volume:Math.round(vol), ticker: mk.ticker||mk.ticker_name||ev.event_ticker, event_ticker: ev.event_ticker});
+      }
+    }
+    // dedup
+    const uniq=new Map();
+    for(const p of livePool){ if(!uniq.has(p.ticker) || p.volume>uniq.get(p.ticker).volume) uniq.set(p.ticker,p); }
+    livePool=[...uniq.values()];
+    // bunch House district markets by state for search (e.g., NYHOUSE) — matches pool.json
+    {
+      const houseBuckets={};
+      const nonHouse=[];
+      const states=["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","DC"];
+      for(const p of livePool){
+        const up=(p.ticker||p.event_ticker||"").toUpperCase();
+        let state=null;
+        if(up.startsWith("HOUSE") && up.length>=7){
+          const cand=up.slice(5,7);
+          if(states.includes(cand)) state=cand;
+        } else if(up.includes("KXHOUSE")){
+          const m=up.match(/KXHOUSE([A-Z]{2})/);
+          if(m && states.includes(m[1])) state=m[1];
+          else {
+            const m2=up.match(/-([A-Z]{2})\d+/);
+            if(m2 && states.includes(m2[1])) state=m2[1];
+          }
+        }
+        if(state && p.broad==="politics" && (up.includes("HOUSE")||up.includes("KXHOUSE"))){
+          if(!houseBuckets[state]) houseBuckets[state]=[];
+          houseBuckets[state].push(p);
+        } else nonHouse.push(p);
+      }
+      if(Object.keys(houseBuckets).length){
+        for(const [state,bucket] of Object.entries(houseBuckets)){
+          const vol=bucket.reduce((s,x)=>s+(x.volume||0),0);
+          const strikes=bucket.reduce((s,x)=>s+(x.strikes||1),0);
+          const exps=bucket.map(x=>x.expiration).filter(Boolean).sort();
+          const exp=exps[0]||bucket[0].expiration;
+          const nameMap={AL:"Alabama",AK:"Alaska",AZ:"Arizona",AR:"Arkansas",CA:"California",CO:"Colorado",CT:"Connecticut",DE:"Delaware",FL:"Florida",GA:"Georgia",HI:"Hawaii",ID:"Idaho",IL:"Illinois",IN:"Indiana",IA:"Iowa",KS:"Kansas",KY:"Kentucky",LA:"Louisiana",ME:"Maine",MD:"Maryland",MA:"Massachusetts",MI:"Michigan",MN:"Minnesota",MS:"Mississippi",MO:"Missouri",MT:"Montana",NE:"Nebraska",NV:"Nevada",NH:"New Hampshire",NJ:"New Jersey",NM:"New Mexico",NY:"New York",NC:"North Carolina",ND:"North Dakota",OH:"Ohio",OK:"Oklahoma",OR:"Oregon",PA:"Pennsylvania",RI:"Rhode Island",SC:"South Carolina",SD:"South Dakota",TN:"Tennessee",TX:"Texas",UT:"Utah",VT:"Vermont",VA:"Virginia",WA:"Washington",WV:"West Virginia",WI:"Wisconsin",WY:"Wyoming",DC:"District of Columbia"};
+          nonHouse.push({name:(nameMap[state]||state)+" House Races", broad:"politics", subcat:"HOUSE", category:"Politics · HOUSE", raw_category:"Politics", location:state, strikes, expiration:exp, expDay:exp.slice(0,10), volume:Math.round(vol), ticker:state+"HOUSE", event_ticker:state+"HOUSE", subtickers: bucket.map(x=>x.ticker), constituents: bucket.length});
+        }
+        livePool=nonHouse;
+      }
+    }
+    if(livePool.length>=5){
+      // use live if we got a real pool
+      // keep fallback merge? no, live is truth
+    } else livePool=null;
+  }catch(e){ console.warn("live paginated load failed", e); livePool=null; }
+
+  POOL = (livePool && livePool.length) ? livePool : (fallback||[]);
+  // normalize
+  POOL = POOL.map(p=> {
+    // ensure subcat intuitive — no ++ padding
+    let broad=p.broad || toBroad(p.raw_category||p.category||"", "", p.ticker||"", p.name||"");
+    let cat=p.category;
+    let sub=p.subcat;
+    if(broad==="sports" && (!cat || cat===broad || cat==="sports")){ const lg=sportsSubcat(p.event_ticker||"", p.name||"", p.subcat||""); cat=`Sports · ${lg}`; sub=lg; }
+    else if(broad==="prices" && (!cat || cat===broad || cat==="prices")){ const ps=pricesSubcat(p.ticker||"", p.name||"", p.subcat||""); cat=`Prices · ${ps}`; sub=ps; }
+    else if(broad==="culture" && (!cat || cat===broad || cat==="culture")){ const cs=cultureSubcat(p.ticker||"", p.name||"", p.subcat||""); cat=`Culture · ${cs}`; sub=cs; }
+    else if(broad==="business" && (!sub || !cat || cat===broad || cat==="business")){ const bs=businessSubcat(p.ticker||"", p.name||"", p.subcat||""); sub=bs; cat = p.raw_category && p.raw_category!==broad ? `${p.raw_category} · ${bs}` : `Business · ${bs}`; }
+    else if(broad==="politics"){ const up=(p.ticker||"").toUpperCase(); const pl=(up.includes("HOUSE")||up.includes("KXHOUSE")) ? "HOUSE" : "ELECT"; sub=pl; cat=`Politics · ${pl}`; }
+    else { sub=(sub||broad); }
+    // location: state if USA, country if not, N/A for prices, businesses have state — includes full state names for MA/CA etc.
+    let loc=p.location;
+    if(!loc){
+      if(broad==="prices") loc="N/A";
+      else {
+        const text=((p.event_ticker||"")+" "+(p.name||"")+" "+(sub||"")+" "+(p.raw_category||"")).toUpperCase();
+        const states=["AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","DC"];
+        const stateFull={"ALABAMA":"AL","ALASKA":"AK","ARIZONA":"AZ","ARKANSAS":"AR","CALIFORNIA":"CA","COLORADO":"CO","CONNECTICUT":"CT","DELAWARE":"DE","FLORIDA":"FL","GEORGIA":"GA","HAWAII":"HI","IDAHO":"ID","ILLINOIS":"IL","INDIANA":"IN","IOWA":"IA","KANSAS":"KS","KENTUCKY":"KY","LOUISIANA":"LA","MAINE":"ME","MARYLAND":"MD","MASSACHUSETTS":"MA","MICHIGAN":"MI","MINNESOTA":"MN","MISSISSIPPI":"MS","MISSOURI":"MO","MONTANA":"MT","NEBRASKA":"NE","NEVADA":"NV","NEW HAMPSHIRE":"NH","NEW JERSEY":"NJ","NEW MEXICO":"NM","NEW YORK":"NY","NORTH CAROLINA":"NC","NORTH DAKOTA":"ND","OHIO":"OH","OKLAHOMA":"OK","OREGON":"OR","PENNSYLVANIA":"PA","RHODE ISLAND":"RI","SOUTH CAROLINA":"SC","SOUTH DAKOTA":"SD","TENNESSEE":"TN","TEXAS":"TX","UTAH":"UT","VERMONT":"VT","VIRGINIA":"VA","WASHINGTON":"WA","WEST VIRGINIA":"WV","WISCONSIN":"WI","WYOMING":"WY","DISTRICT OF COLUMBIA":"DC"};
+        let found=null;
+        for(const [name,code] of Object.entries(stateFull)){ if(text.includes(name)){ found=code; break; } }
+        if(!found){
+          const m=text.match(/\b([A-Z]{2})-?\d{1,2}\b/);
+          if(m && states.includes(m[1])) found=m[1];
+        }
+        if(!found) for(const s of states){ if(new RegExp(`\\b${s}\\b`).test(text)){ found=s; break; } }
+        if(!found){
+          const cityMap={ "NEW YORK":"NY","NYC":"NY","LOS ANGELES":"CA","CHICAGO":"IL","BOSTON":"MA","PITTSBURGH":"PA","PHILADELPHIA":"PA","MIAMI":"FL","ATLANTA":"GA","SEATTLE":"WA","SAN FRANCISCO":"CA","HOUSTON":"TX","DALLAS":"TX","WASHINGTON":"DC","DETROIT":"MI","CLEVELAND":"OH","DENVER":"CO","PHOENIX":"AZ"};
+          for(const [city,st] of Object.entries(cityMap)){ if(text.includes(city)){ found=st; break; } }
+        }
+        if(!found){
+          const countries=["ARGENTINA","BRAZIL","BULGARIA","CAPE VERDE","ESTONIA","FRANCE","GHANA","HUNGARY","MOLDOVA","MONGOLIA","PHILIPPINES","SOUTH KOREA","WORLD","EU","UK","CANADA","MEXICO","GERMANY","JAPAN","KOREA"];
+          for(const c of countries){ if(text.includes(c)){ found=(c==="WORLD"?"World":c==="EU"?"EU":c.charAt(0)+c.slice(1).toLowerCase()); break; } }
+        }
+        if(!found){
+          // smart: everything in US should have state, national politics -> DC
+          if(broad==="business"){
+            const compMap={"AMAZON":"WA","APPLE":"CA","GOOGLE":"CA","ALPHABET":"CA","MICROSOFT":"WA","TESLA":"TX","META":"CA","NETFLIX":"CA","NVIDIA":"CA","OPENAI":"CA"};
+            for(const [comp,st] of Object.entries(compMap)){ if(text.includes(comp)){ found=st; break; } }
+            if(!found && ["HOUSE","SENATE","PRESIDENT","CONTROL","GOVERNOR","MAYOR","CONGRESS"].some(k=> text.includes(k))) found="DC";
+            if(!found && ["TECH","AI","AGI","SOFTWARE"].some(k=> text.includes(k))) found="CA";
+            if(!found && ["BANK","FINANCE","MARKET"].some(k=> text.includes(k))) found="NY";
+            if(!found) found="DC";
+          } else if(broad==="politics") found="DC";
+          else if(broad==="sports") found="DC";
+          else if(broad==="weather") found="World";
+          else found="DC";
+        }
+        loc=found;
+      }
+    }
+    return {
+    name: p.name,
+    broad: broad,
+    subcat: sub||p.subcat,
+    category: cat || p.broad || "business",
+    raw_category: p.raw_category||p.category||"",
+    location: loc,
+    strikes: Number(p.strikes)||2,
+    expiration: p.expiration,
+    expDay: (p.expiration||"").slice(0,10),
+    volume: Number(p.volume)||0,
+    ticker: p.ticker,
+    event_ticker: p.event_ticker
+  }});
+  POOL.sort((a,b)=> a.ticker.localeCompare(b.ticker));
+
+  // update footer if present, banner removed per user request
+  const footerEl=document.getElementById('footer-pool');
+  if(footerEl) footerEl.textContent = `${POOL.length.toLocaleString()} markets`;
+
+  await pickTarget();
+  restoreState();
+  renderAutocomplete('');
+  // log chosen market to server
+  logChosen();
+}
+
+async function fetchAllMarketsPaginated(){
+  const BASE="https://api.elections.kalshi.com/trade-api/v2";
+  let all=[], cursor=null, page=0;
+  while(true){
+    page++;
+    let url=`${BASE}/markets?status=open&limit=200`;
+    if(cursor) url+=`&cursor=${cursor}`;
+    const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(), 8000);
+    const r=await fetch(url, {signal: ctrl.signal}); clearTimeout(to);
+    if(!r.ok) throw new Error("markets fetch "+r.status);
+    const data=await r.json();
+    all.push(...(data.markets||[]));
+    cursor=data.cursor;
+    if(!cursor || !(data.markets||[]).length) break;
+    if(page>=12) break;
+  }
+  return all;
+}
+async function fetchAllEventsPaginated(){
+  const BASE="https://api.elections.kalshi.com/trade-api/v2";
+  let all=[], cursor=null, page=0;
+  while(true){
+    page++;
+    let url=`${BASE}/events?status=open&with_nested_markets=true&limit=200`;
+    if(cursor) url+=`&cursor=${cursor}`;
+    const ctrl=new AbortController(); const to=setTimeout(()=>ctrl.abort(), 8000);
+    const r=await fetch(url, {signal: ctrl.signal}); clearTimeout(to);
+    if(!r.ok) throw new Error("events fetch "+r.status);
+    const data=await r.json();
+    all.push(...(data.events||[]));
+    cursor=data.cursor;
+    if(!cursor || !(data.events||[]).length) break;
+    if(page>=12) break;
+  }
+  // targeted sports fallback (if generic pagination misses today's games beyond cursor)
+  for(const series of ["KXMLBGAME","KXWNBAGAME","KXLOLGAME","KXNFLGAME"]){
+    try{
+      const url=`${BASE}/events?series_ticker=${series}&status=open&with_nested_markets=true&limit=100`;
+      const r=await fetch(url); if(!r.ok) continue;
+      const d=await r.json();
+      const existing=new Set(all.map(e=>e.event_ticker));
+      for(const ev of (d.events||[])) if(!existing.has(ev.event_ticker)) all.push(ev);
+    }catch(e){}
+  }
+  return all;
+}
+
+function hashStr(s){ let h=0; for(let i=0;i<s.length;i++){ h=((h<<5)-h)+s.charCodeAt(i); h|=0;} return Math.abs(h); }
+
+async function pickTarget(){
+  const idxKey='kalshi-wordle-target-idx-'+TODAY_ISO;
+  const tkKey='kalshi-wordle-target-'+TODAY_ISO;
+  const guessesKey='kalshi-wordle-guesses-'+TODAY_ISO;
+  // try to sync with server's random chosen — if server picked new market, clear cache
+  try{
+    const r=await fetch('/chosen'); if(r.ok){ const srv=await r.json(); if(srv && srv.ticker){
+      const stored=localStorage.getItem(tkKey);
+      if(stored && stored!==srv.ticker){
+        // server chose new market: clear cache
+        localStorage.removeItem(idxKey); localStorage.removeItem(tkKey); localStorage.removeItem(guessesKey);
+        console.log('[CACHE] cleared — server new target', srv.ticker);
+      }
+      const exact=POOL.find(p=>p.ticker===srv.ticker);
+      if(exact){ TARGET=exact; localStorage.setItem(tkKey, exact.ticker); const i=POOL.indexOf(exact); localStorage.setItem(idxKey, String(i)); return; }
+    }}
+  }catch(e){}
+  let idx=localStorage.getItem(idxKey);
+  if(idx===null){
+    idx = Math.floor(Math.random() * POOL.length);
+    localStorage.setItem(idxKey, String(idx));
+    localStorage.setItem(tkKey, POOL[idx].ticker);
+  } else idx=Number(idx);
+  TARGET = POOL[idx] || POOL[Math.floor(Math.random()*POOL.length)] || POOL[0];
+  if(new URLSearchParams(location.search).has('random')){
+    idx = Math.floor(Math.random() * POOL.length);
+    TARGET = POOL[idx];
+    localStorage.setItem(idxKey, String(idx));
+    localStorage.setItem(tkKey, TARGET.ticker);
+  }
+}
+
+let guesses=[];
+function saveState(){ localStorage.setItem('kalshi-wordle-guesses-'+TODAY_ISO, JSON.stringify(guesses.map(g=>g.ticker))); }
+function restoreState(){
+  try{
+    const raw=localStorage.getItem('kalshi-wordle-guesses-'+TODAY_ISO);
+    if(raw){
+      const tickers=JSON.parse(raw);
+      for(const tk of tickers){
+        const m=POOL.find(p=>p.ticker===tk);
+        if(m){ guesses.push(m); addRow(m,false); }
+      }
+      updateTries(); checkEnd(false);
+    }
+  }catch(e){}
+}
+
+function fmtVol(v){ if(v>=1e6) return '$'+(v/1e6).toFixed(1)+'M'; if(v>=1000) return '$'+(v/1000).toFixed(0)+'k'; return '$'+v; }
+function fmtDate(s){
+  if(!s) return "";
+  const d=new Date(s);
+  if(isNaN(d)) return (s||"").slice(0,10);
+  const m=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][d.getUTCMonth()];
+  const day=String(d.getUTCDate()).padStart(2,"0");
+  const yr=String(d.getUTCFullYear()).slice(-2);
+  return `${m} ${day}, ${yr}`;
+}
+
+function feedback(guess, target){
+  let broad = (guess.broad===target.broad) ? 'green' : 'gray';
+  let sub = (guess.subcat===target.subcat) ? 'green' : (guess.broad===target.broad ? 'yellow' : 'gray');
+  // location: regions — MA should not be yellow to Boston/US just because same country, only same region
+  const regionMap={ "CT":"Northeast","ME":"Northeast","MA":"Northeast","NH":"Northeast","RI":"Northeast","VT":"Northeast","NY":"Northeast","NJ":"Northeast","PA":"Northeast", "IL":"Midwest","IN":"Midwest","MI":"Midwest","OH":"Midwest","WI":"Midwest","IA":"Midwest","KS":"Midwest","MN":"Midwest","MO":"Midwest","NE":"Midwest","ND":"Midwest","SD":"Midwest", "DE":"South","FL":"South","GA":"South","MD":"South","NC":"South","SC":"South","VA":"South","DC":"South","WV":"South","AL":"South","KY":"South","MS":"South","TN":"South","AR":"South","LA":"South","OK":"South","TX":"South", "AZ":"West","CA":"West","CO":"West","HI":"West","ID":"West","MT":"West","NV":"West","NM":"West","OR":"West","UT":"West","WA":"West","WY":"West","AK":"West" };
+  let loc='gray';
+  if((guess.location||'') === (target.location||'')) loc='green';
+  else if((guess.location||'N/A')==='N/A' && (target.location||'N/A')==='N/A') loc='green';
+  else if(guess.location && target.location && guess.location!=='N/A' && target.location!=='N/A' && guess.location!=='US' && target.location!=='US' && guess.location!=='World' && target.location!=='World'){
+    const r1=regionMap[guess.location], r2=regionMap[target.location];
+    if(r1 && r2 && r1===r2) loc='yellow';
+  }
+  // strikes
+  let strike='gray', sArrow='';
+  const sd=guess.strikes - target.strikes;
+  if(sd===0) strike='green'; else if(Math.abs(sd)<=2) strike='yellow';
+  if(sd<0) sArrow=' ▲'; else if(sd>0) sArrow=' ▼';
+  // expiration
+  let exp='gray', eArrow='';
+  if(guess.expDay===target.expDay) exp='green';
+  else {
+    const a=new Date(guess.expDay), b=new Date(target.expDay);
+    const diff=Math.round((a-b)/86400000);
+    if(Math.abs(diff)<=2) exp='yellow';
+    if(diff<0) eArrow=' ▲'; else if(diff>0) eArrow=' ▼';
+  }
+  // volume
+  let vol='gray', vArrow='';
+  const gv=guess.volume, tv=target.volume;
+  if(tv>0){
+    const ratio=Math.abs(gv-tv)/tv;
+    if(ratio<=0.25) vol='green'; else if(ratio<=0.60) vol='yellow';
+    if(gv < tv) vArrow=' ▲'; else if(gv > tv) vArrow=' ▼';
+    if(ratio<=0.25) vArrow='';
+  }
+  // market name: green if exact, yellow if shares ≥2 words (e.g., "total restaurant" → yellow)
+  let name = 'gray';
+  if (guess.ticker===target.ticker) name='green';
+  else {
+    const tok = s => (s||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim().split(/\s+/).filter(w=>w.length>=2);
+    const aSet = new Set(tok(guess.name));
+    const bSet = new Set(tok(target.name));
+    let common=0;
+    for(const w of aSet) if(bSet.has(w)) common++;
+    if(common>=2) name='yellow';
+  }
+  return {broad, sub, loc, strike, sArrow, exp, eArrow, vol, vArrow, name};
+}
+
+function addRow(guess, animate){
+  const empty=document.getElementById('empty'); if(empty) empty.remove();
+  const fb=feedback(guess, TARGET);
+  const board=document.getElementById('board');
+  const row=document.createElement('div');
+  row.className='grid grid-cols-[1.5fr_0.5fr_0.55fr_0.5fr_0.4fr_0.6fr_0.55fr] gap-1.5';
+  if(animate) row.style.opacity='0';
+  // for bunched House markets (e.g., NYHOUSE), show specific subticker when guessed correctly
+  const isHouseBunch = guess.ticker && guess.ticker.endsWith('HOUSE') && guess.subtickers && guess.subtickers.length;
+  const isCorrectHouse = isHouseBunch && guess.ticker === TARGET.ticker && fb.name === 'green';
+  let houseDetail = '';
+  if (isCorrectHouse) {
+    // pick the specific district that was the day's chosen one - deterministic by date
+    const idx = Math.abs(hashStr(TODAY_ISO + TARGET.ticker)) % TARGET.subtickers.length;
+    const specific = TARGET.subtickers[idx];
+    houseDetail = `<div class="text-[11px] font-bold opacity-70 mt-1">↳ ${specific}</div>`;
+  }
+  row.innerHTML=`
+    <div class="tile ${fb.name} p-2 md:p-3 flex flex-col justify-center min-h-[64px]">
+      <div class="text-[17px] md:text-[19px] font-black leading-tight line-clamp-2">${guess.name}</div>
+      ${houseDetail}
+    </div>
+    <div class="tile ${fb.broad} p-2 flex flex-col items-center justify-center text-center min-h-[64px]">
+      <div class="text-[12px] md:text-[13px] font-black tracking-wide leading-none">${(guess.broad||'').toUpperCase()}</div>
+    </div>
+    <div class="tile ${fb.sub} p-2 flex flex-col items-center justify-center text-center min-h-[64px]">
+      <div class="text-[12px] md:text-[14px] font-black tracking-wide leading-none">${(guess.subcat||'').toUpperCase()}</div>
+    </div>
+    <div class="tile ${fb.loc} p-2 flex flex-col items-center justify-center text-center min-h-[64px]">
+      <div class="text-[13px] md:text-[14px] font-black tracking-wide leading-none">${(guess.location||'N/A').toUpperCase()}</div>
+    </div>
+    <div class="tile ${fb.strike} p-2 flex flex-col items-center justify-center text-center min-h-[64px]">
+      <div class="text-[20px] md:text-[22px] font-black mono">${guess.strikes}${fb.sArrow}</div>
+    </div>
+    <div class="tile ${fb.exp} p-2 flex flex-col items-center justify-center text-center min-h-[64px]">
+      <div class="text-[14px] md:text-[15px] font-black mono">${fmtDate(guess.expiration)}${fb.eArrow}</div>
+    </div>
+    <div class="tile ${fb.vol} p-2 flex flex-col items-center justify-center text-center min-h-[64px]">
+      <div class="text-[15px] md:text-[17px] font-black mono">${fmtVol(guess.volume)}${fb.vArrow}</div>
+    </div>
+  `;
+  board.appendChild(row);
+  if(animate) requestAnimationFrame(()=> row.style.opacity='1');
+}
+
+function updateTries(){
+  const left=MAX_GUESSES-guesses.length;
+  document.getElementById('tries-left').textContent = left+" LEFT";
+  document.getElementById('tries-left').style.color = left<=2 ? '#dc2626' : '#121213';
+}
+function checkEnd(celebrate){
+  const won=guesses.some(g=>g.ticker===TARGET.ticker);
+  const lost=guesses.length>=MAX_GUESSES && !won;
+  if(won||lost){
+    document.getElementById('guess-btn').disabled=true;
+    document.getElementById('guess-input').disabled=true;
+    document.getElementById('result').classList.remove('hidden');
+    document.getElementById('share-btn').classList.remove('hidden');
+    if(won){
+      document.getElementById('result-title').textContent=`GOT IT IN ${guesses.length}!`;
+      let sub = '';
+      if (TARGET.ticker && TARGET.ticker.endsWith('HOUSE') && TARGET.subtickers && TARGET.subtickers.length) {
+        const idx = Math.abs(hashStr(TODAY_ISO + TARGET.ticker)) % TARGET.subtickers.length;
+        sub = ` ↳ ${TARGET.subtickers[idx]}`;
+      }
+      document.getElementById('result-sub').textContent=`${TARGET.name}${sub} — ${TARGET.broad} · ${TARGET.strikes} strikes · ${fmtDate(TARGET.expiration)} · ${fmtVol(TARGET.volume)}`;
+    } else {
+      document.getElementById('result-title').textContent=`ANSWER:`;
+      let sub = '';
+      if (TARGET.ticker && TARGET.ticker.endsWith('HOUSE') && TARGET.subtickers && TARGET.subtickers.length) {
+        const idx = Math.abs(hashStr(TODAY_ISO + TARGET.ticker)) % TARGET.subtickers.length;
+        sub = ` ↳ ${TARGET.subtickers[idx]}`;
+      }
+      document.getElementById('result-sub').textContent=`${TARGET.name}${sub} — ${TARGET.broad} · ${TARGET.strikes} · ${fmtDate(TARGET.expiration)} · ${fmtVol(TARGET.volume)}`;
+    }
+    if(celebrate && navigator.vibrate) navigator.vibrate(200);
+    logGuess(won?"win":"lose");
+  }
+  return won||lost;
+}
+function shareText(){
+  const won=guesses.some(g=>g.ticker===TARGET.ticker);
+  const header= won ? `Kalshi Wordle ${TODAY_ISO} ${guesses.length}/${MAX_GUESSES}` : `Kalshi Wordle ${TODAY_ISO} X/${MAX_GUESSES}`;
+  let grid="";
+  for(const g of guesses){
+    const fb=feedback(g,TARGET);
+    const line=(fb.name==='green'?'🟩':'⬜')+(fb.broad==='green'?'🟩':'⬜')+(fb.sub==='green'?'🟩':fb.sub==='yellow'?'🟨':'⬜')+(fb.strike==='green'?'🟩':fb.strike==='yellow'?'🟨':'⬜')+(fb.exp==='green'?'🟩':fb.exp==='yellow'?'🟨':'⬜')+(fb.vol==='green'?'🟩':fb.vol==='yellow'?'🟨':'⬜');
+    grid+=line+"\n";
+  }
+  return header+"\n"+grid+"\nkalshi-wordle — "+POOL.length+" events";
+}
+
+// logging to server — which market is chosen (daily target) and each guess
+function logChosen(){
+  const payload={date: TODAY_ISO, target: TARGET, poolSize: POOL.length, ua: navigator.userAgent, ts: new Date().toISOString()};
+  // fire-and-forget; server may be python http.server logging endpoint or /api/log
+  fetch('/log', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({type:'chosen', ...payload})}).catch(()=>{});
+  // also try /api/log for hosted setups
+  fetch('/api/log', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({type:'chosen', ...payload})}).catch(()=>{});
+  console.log('LOG chosen', TARGET.ticker);
+}
+function logGuess(outcome){
+  const payload={date: TODAY_ISO, target: TARGET.ticker, guesses: guesses.map(g=>g.ticker), outcome, ts: new Date().toISOString()};
+  fetch('/log', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({type:'guess', ...payload})}).catch(()=>{});
+  fetch('/api/log', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({type:'guess', ...payload})}).catch(()=>{});
+}
+
+// autocomplete — instant local dropdown (backend optional, not required)
+const input=document.getElementById('guess-input');
+const ac=document.getElementById('autocomplete');
+function renderAutocomplete(q){
+  const query=(q||'').trim().toLowerCase();
+  if(!query){ ac.classList.add('hidden'); ac.innerHTML=''; return; }
+  if(!POOL.length){ ac.classList.add('hidden'); return; }
+  const filtered=POOL.filter(p=> {
+    if(guesses.some(g=>g.ticker===p.ticker)) return false;
+    const tags=getAbbrTags(p.ticker,p.name).join(" ").toLowerCase();
+    return p.name.toLowerCase().includes(query) || p.ticker.toLowerCase().includes(query) || p.broad.toLowerCase().includes(query) || (p.subcat||'').toLowerCase().includes(query) || tags.includes(query) || tags.split(" ").some(t=> t.includes(query));
+  }).slice(0,14);
+  if(!filtered.length){ ac.classList.add('hidden'); ac.innerHTML=''; return; }
+  ac.innerHTML=filtered.map(p=> {
+    const tags=getAbbrTags(p.ticker,p.name);
+    const tagHtml = tags.length ? ` <span class="ml-1 inline-block text-[10px] font-black bg-[#121213] text-white px-1.5 py-0.5 rounded">${tags.join("</span> <span class=\"ml-1 inline-block text-[10px] font-black bg-[#121213] text-white px-1.5 py-0.5 rounded\">")}</span>` : "";
+    return `
+    <button data-ticker="${p.ticker}" class="w-full text-left px-3 py-3 hover:bg-[#f3f4f6] border-b border-[#d3d6da] last:border-0 flex items-center gap-3">
+      <span class="flex-1 min-w-0"><span class="block text-[15px] font-black leading-tight truncate">${p.name}${tagHtml}</span><span class="block text-[11px] font-bold text-[#787c7e]">${(p.broad||'').toUpperCase()}${p.subcat? ' • '+p.subcat.toUpperCase():''} • ${p.strikes} strikes • ${fmtDate(p.expiration)} • ${fmtVol(p.volume)}</span></span>
+      <span class="text-[11px] font-black border-2 border-[#121213] px-2 py-1">PICK</span>
+    </button>
+  `}).join('');
+  ac.classList.remove('hidden');
+  // also fire backend autocomplete in background for server log (non-blocking)
+  fetch(`/autocomplete?q=${encodeURIComponent(query)}&limit=14`).catch(()=>{});
+}
+input.addEventListener('input', e=> renderAutocomplete(e.target.value));
+input.addEventListener('focus', e=> renderAutocomplete(e.target.value));
+document.addEventListener('click', e=>{ if(!ac.contains(e.target) && e.target!==input) ac.classList.add('hidden'); });
+ac.addEventListener('click', e=>{
+  const btn=e.target.closest('[data-ticker]'); if(!btn) return;
+  const t=btn.getAttribute('data-ticker');
+  const m=POOL.find(p=>p.ticker===t);
+  if(m){
+    // directly make the guess — no need to select then hit GUESS
+    input.value=m.name;
+    input.dataset.ticker=t;
+    ac.classList.add('hidden');
+    // submit immediately
+    doGuess();
+  }
+});
+document.getElementById('guess-btn').addEventListener('click', doGuess);
+input.addEventListener('keydown', e=>{ if(e.key==='Enter') doGuess(); if(e.key==='Escape') ac.classList.add('hidden'); });
+function doGuess(){
+  let ticker=input.dataset.ticker;
+  let guess=null;
+  if(ticker) guess=POOL.find(p=>p.ticker===ticker);
+  if(!guess){
+    const val=input.value.trim().toLowerCase();
+    guess=POOL.find(p=> p.name.toLowerCase()===val || p.ticker.toLowerCase()===val);
+    if(!guess) guess=POOL.find(p=> p.name.toLowerCase().includes(val) || p.ticker.toLowerCase().includes(val));
+  }
+  if(!guess){ input.classList.add('ring-2','ring-red-500'); setTimeout(()=>input.classList.remove('ring-2','ring-red-500'),700); return; }
+  if(guesses.some(g=>g.ticker===guess.ticker)){ alert('Already guessed'); return; }
+  if(guesses.length>=MAX_GUESSES) return;
+  guesses.push(guess); saveState(); addRow(guess,true); updateTries(); input.value=''; delete input.dataset.ticker; ac.classList.add('hidden'); renderAutocomplete(''); checkEnd(true);
+}
+document.getElementById('giveup').addEventListener('click', ()=>{
+  if(!confirm('Reveal answer?')) return;
+  if(!guesses.some(g=>g.ticker===TARGET.ticker)){ guesses.push(TARGET); addRow(TARGET,true); saveState(); }
+  checkEnd(false);
+});
+function showToast(msg="Copied"){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.remove('hidden');
+  t.style.opacity='1';
+  clearTimeout(t._hide);
+  t._hide=setTimeout(()=>{ t.style.opacity='0'; setTimeout(()=> t.classList.add('hidden'), 200); }, 2000);
+}
+function flashCopied(btn){
+  showToast('Copied — share text copied');
+  const orig=btn.textContent;
+  btn.textContent='COPIED';
+  btn.disabled=true;
+  setTimeout(()=>{ btn.textContent=orig; btn.disabled=false; }, 2000);
+}
+document.getElementById('share-btn').addEventListener('click', async(e)=>{ const t=shareText(); try{ await navigator.clipboard.writeText(t); }catch{ const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); } flashCopied(e.currentTarget); });
+document.getElementById('result-share').addEventListener('click', async(e)=>{ const t=shareText(); try{ await navigator.clipboard.writeText(t); }catch{ const ta=document.createElement('textarea'); ta.value=t; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); } flashCopied(e.currentTarget); });
+document.getElementById('result-reveal').addEventListener('click', ()=> alert(`${TARGET.name}\n${TARGET.broad} · ${TARGET.category}\nStrikes: ${TARGET.strikes}\nExpires: ${fmtDate(TARGET.expiration)}\nVolume: ${fmtVol(TARGET.volume)}`));
+document.getElementById('how-btn').addEventListener('click', ()=> document.getElementById('modal').classList.remove('hidden'));
+document.getElementById('modal-close').addEventListener('click', ()=> document.getElementById('modal').classList.add('hidden'));
+document.getElementById('modal').addEventListener('click', e=>{ if(e.target.id==='modal') e.currentTarget.classList.add('hidden'); });
+if(new URLSearchParams(location.search).has('reset')){
+  localStorage.removeItem('kalshi-wordle-guesses-'+TODAY_ISO);
+  localStorage.removeItem('kalshi-wordle-target-'+TODAY_ISO);
+  localStorage.removeItem('kalshi-wordle-target-idx-'+TODAY_ISO);
+}
+loadPool();
+</script>
+</body>
+</html>
