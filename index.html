@@ -594,16 +594,20 @@ async function pickTarget(){
   const idxKey='kalshi-wordle-target-idx-'+TODAY_ISO;
   const tkKey='kalshi-wordle-target-'+TODAY_ISO;
   const guessesKey='kalshi-wordle-guesses-'+TODAY_ISO;
-  // try to sync with server's random chosen — if server picked new market, clear cache
+  // try to sync with server's random chosen — if server picked new market (new day or restart), clear cache
   try{
-    const r=await fetch('/chosen'); if(r.ok){ const srv=await r.json(); if(srv && srv.ticker){
+    const r=await fetch('/chosen'); if(r.ok){ const srv=await r.json(); if(srv && (srv.ticker||srv.event_ticker)){
+      const srvTicker = srv.ticker || srv.event_ticker;
       const stored=localStorage.getItem(tkKey);
-      if(stored && stored!==srv.ticker){
-        // server chose new market: clear cache
+      // also handle date rollover: TODAY_ISO already isolates by date, but server restart on same day should clear guesses
+      if(stored && stored!==srvTicker){
         localStorage.removeItem(idxKey); localStorage.removeItem(tkKey); localStorage.removeItem(guessesKey);
-        console.log('[CACHE] cleared — server new target', srv.ticker);
+        // also clear any in-memory guesses from previous target
+        guesses = [];
+        GAVE_UP = false;
+        console.log('[CACHE] cleared — server new target', srvTicker, '(stored was', stored, ')');
       }
-      const exact=POOL.find(p=>p.ticker===srv.ticker);
+      const exact=POOL.find(p=>p.ticker===srvTicker || p.event_ticker===srvTicker || p.name===srv.name);
       if(exact){ TARGET=exact; localStorage.setItem(tkKey, exact.ticker); const i=POOL.indexOf(exact); localStorage.setItem(idxKey, String(i)); return; }
     }}
   }catch(e){}

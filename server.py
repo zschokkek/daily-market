@@ -37,7 +37,11 @@ class Handler(SimpleHTTPRequestHandler):
                         if p.get("name")==chosen_name:
                             chosen=p; break
                 if not chosen and pool:
+                    # no valid chosen.txt yet (first spin or pool rebuilt) — pick stable and persist for this run
                     chosen = random.choice(sorted(pool, key=lambda x: x.get("event_ticker") or x.get("ticker") or ""))
+                    try:
+                        pathlib.Path(chosen_path).write_text(chosen.get("name","")+"\n")
+                    except: pass
                 body = json.dumps(chosen or {}).encode()
                 self.send_response(200)
                 self.send_header("Content-Type","application/json")
