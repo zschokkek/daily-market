@@ -613,7 +613,7 @@ async function loadPool(){
 
   // update footer if present, banner removed per user request
   const footerEl=document.getElementById('footer-pool');
-  if(footerEl) footerEl.textContent = `${POOL.length.toLocaleString()} markets${HIDDEN_POOL?` · ${HIDDEN_POOL.length} hidden`:''}`;
+  if(footerEl) footerEl.textContent = `${POOL.length.toLocaleString()} markets`;
 
   await pickTarget();
   restoreState();
