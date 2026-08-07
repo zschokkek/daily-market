@@ -449,8 +449,8 @@ print(f"Fetching — today {today_iso} now {now.isoformat()}")
 
 events = fetch_all_events()
 print(f"Fetched {len(events)} events")
-# Also fetch sports series directly to ensure today's games beyond cursor
-for series in ["KXMLBGAME","KXWNBAGAME","KXLOLGAME","KXNFLGAME","KXNBA","KXSOCCER","KXGOLF"]:
+# Also fetch sports + short-term crypto price series directly to ensure today's games/prices beyond cursor
+for series in ["KXMLBGAME","KXWNBAGAME","KXLOLGAME","KXNFLGAME","KXNBA","KXSOCCER","KXGOLF","KXBTC","KXBTCD","KXETH","KXETHD","KXSOL","KXSOLE","KXBNB","KXHYPE"]:
     try:
         url=f"{BASE}/events?series_ticker={series}&status=open&with_nested_markets=true&limit=100"
         data=fetch_json(url)
@@ -574,9 +574,12 @@ for ev in events:
         vol_sum = sum(float(m.get("volume_fp") or 0) for m in markets)
     if vol_sum==0:
         vol_sum = abs(hash(ev.get("event_ticker","")) % 80000)+5000
-    # filter out tiny volume markets <10k as requested
+    # filter out tiny volume markets <10k as requested — but keep short-term crypto price ranges even if <10k (they're 5pm ET daily, vol builds intraday; user wants them)
     if vol_sum < 10000:
-        continue
+        is_short_crypto = broad=="prices" and any(k in (ev.get("event_ticker","")+ev.get("title","")).lower() for k in ["kxbtc","kxeth","kxbnb","kxhype","kxsol","price range","price on"])
+        # check exp today/tomorrow for price ranges
+        if not (is_short_crypto and exp_day in (today_iso, tomorrow_iso)):
+            continue
     # favorite price (odds of favorite) — for batched event take max mid-price among strikes
     fav_price = 50
     fav_ticker = ""
