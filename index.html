@@ -201,8 +201,9 @@ function sportsSubcat(ticker, title, sub){
   if(s.includes("KXWNB")||t.includes("KXWNB")||tu.includes("WNBA")) return "WNBA";
   if(s.includes("KXLOL")||t.includes("KXLOL")||tu.includes("LEAGUE OF LEGENDS")) return "Esports";
   if(s.includes("KXNHL")||t.includes("KXNHL")||tu.includes("NHL")||tu.includes("HOCKEY")) return "NHL";
+  if(s.includes("HOLEINONE")||t.includes("HOLEINONE")||tu.includes("HOLEINONE")||tu.includes("WYNDHAM")||s.includes("WYNDHAM")||s.includes("PGAHOLEINONE")) return "Golf";
   if(s.includes("KXSOCC")||s.includes("SOCCER")||tu.includes("SOCCER")||tu.includes("MLS")) return "Soccer";
-  if(s.includes("KXGOLF")||t.includes("KXGOLF")||tu.includes("GOLF")||tu.includes("PGA")) return "Golf";
+  if(s.includes("KXGOLF")||t.includes("KXGOLF")||tu.includes("GOLF")||tu.includes("PGA")||s.includes("GOLF")||s.includes("PGA")||t.includes("GOLF")||t.includes("PGA")) return "Golf";
   if(s.includes("KXTENN")||tu.includes("TENNIS")) return "Tennis";
   if(s.includes("KXUFC")||tu.includes("UFC")||tu.includes("MMA")) return "MMA";
   if(sub){
@@ -707,7 +708,7 @@ function getSportFamily(sub){
   if(["MLB"].includes(s) || s.includes("MLB")) return "baseball";
   if(["NHL"].includes(s) || s.includes("NHL")) return "hockey";
   if(["SOCCER","MLS","EPL","LEAGUESCUP","UCL","UECL","COPPAITALIA","UEL","COPADOBRASIL","LALIGA","BUNDESLIGA","SERIEA","LIGUE1","CONMEBOL","COPAAMERICA"].some(k=> s.includes(k)) || s.includes("SOCCER") || s.includes("LEAGUE") || s.includes("CUP")) return "soccer";
-  if(["GOLF","PGA"].includes(s) || s.includes("GOLF") || s.includes("PGA")) return "golf";
+  if(["GOLF","PGA","HOLEIN","WYNDHAM"].some(k=> s.includes(k)) || s.includes("GOLF") || s.includes("PGA") || s.includes("HOLEIN") || s.includes("WYNDHAM")) return "golf";
   if(["TENNIS","ATP","WTA","WTAFINALS"].some(k=> s.includes(k)) || s.includes("TENN") || s.includes("ATP") || s.includes("WTA")) return "tennis";
   if(["MMA","UFC","BOXING","WBC"].some(k=> s.includes(k)) || s.includes("MMA") || s.includes("UFC")) return "combat";
   if(["ESPORTS","LOL","CS2"].some(k=> s.includes(k)) || s.includes("ESPORT")) return "esports";
@@ -747,6 +748,10 @@ function feedback(guess, target){
       const dLat=to[0]-from[0], dLon=to[1]-from[1];
       lArrow = Math.abs(dLat) > Math.abs(dLon) ? (dLat>0 ? ' ↑' : ' ↓') : (dLon>0 ? ' →' : ' ←');
     }
+  }
+  else if((guess.location==='US' && isUS(target.location)) || (target.location==='US' && isUS(guess.location))){
+    // national US market vs state guess — yellow (close, same country) , no arrow (national is everywhere)
+    loc='yellow';
   }
   else if(guess.location && target.location && guess.location!=='N/A' && target.location!=='N/A' && guess.location!=='US' && target.location!=='US' && guess.location!=='World' && target.location!=='World'){
     const r1=regionMap[guess.location], r2=regionMap[target.location];
@@ -938,7 +943,8 @@ function checkEnd(celebrate){
 }
 function shareText(){
   const won=guesses.some(g=>g.ticker===TARGET.ticker) && !GAVE_UP;
-  const header= won ? `KXDaily ${TODAY_ISO} ${guesses.length}/${MAX_GUESSES}` : `KXDaily ${TODAY_ISO} X/${MAX_GUESSES}`;
+  const isGiveUp = GAVE_UP && guesses.some(g=>g.ticker===TARGET.ticker);
+  const header= won ? `KXDaily ${TODAY_ISO} ${guesses.length}/${MAX_GUESSES}` : `KXDaily ${TODAY_ISO} X/${MAX_GUESSES}${isGiveUp ? ' — gave up' : ''}`;
   let grid="";
   for(const g of guesses){
     const fb=feedback(g,TARGET);
