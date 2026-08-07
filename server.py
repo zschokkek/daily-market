@@ -19,11 +19,12 @@ LOG_FILE = os.path.join(os.path.dirname(__file__), "chosen.log")
 class Handler(SimpleHTTPRequestHandler):
     def do_GET(self):
         parsed = urlparse(self.path)
-        # chosen market endpoint for frontend sync
+        # chosen market endpoint for frontend sync — prefers hidden_pool.json if present (curated production)
         if parsed.path in ("/chosen","/api/chosen"):
             try:
-                import pathlib, random
+                import pathlib, random, datetime
                 pool_path = os.path.join(os.getcwd(), "pool.json")
+                hidden_path = os.path.join(os.getcwd(), "hidden_pool.json")
                 chosen_path = os.path.join(os.getcwd(), "chosen.txt")
                 chosen_name = None
                 if os.path.exists(chosen_path):
@@ -31,14 +32,30 @@ class Handler(SimpleHTTPRequestHandler):
                         chosen_name = pathlib.Path(chosen_path).read_text().strip().splitlines()[-1] if pathlib.Path(chosen_path).read_text().strip() else None
                     except: pass
                 pool = json.loads(pathlib.Path(pool_path).read_text()) if os.path.exists(pool_path) else []
+                hidden = json.loads(pathlib.Path(hidden_path).read_text()) if os.path.exists(hidden_path) else []
+                pick_from = hidden if hidden else pool
                 chosen = None
                 if chosen_name:
-                    for p in pool:
+                    for p in pick_from:
                         if p.get("name")==chosen_name:
                             chosen=p; break
-                if not chosen and pool:
-                    # no valid chosen.txt yet (first spin or pool rebuilt) — pick stable and persist for this run
-                    chosen = random.choice(sorted(pool, key=lambda x: x.get("event_ticker") or x.get("ticker") or ""))
+                    if not chosen:
+                        for p in pool:
+                            if p.get("name")==chosen_name:
+                                chosen=p; break
+                if not chosen and pick_from:
+                    # hidden_pool: deterministic daily pick by date (reorder hidden_pool.json to control sequence)
+                    if hidden:
+                        today = datetime.datetime.now(datetime.timezone.utc).date()
+                        ref = datetime.date(2026,8,7)
+                        days = (today - ref).days
+                        idx = days % len(hidden)
+                        chosen = hidden[idx]
+                        # map to pool entry so price/vol stay live
+                        pool_match = next((p for p in pool if p.get("ticker")==chosen.get("ticker")), None)
+                        if pool_match: chosen = pool_match
+                    else:
+                        chosen = random.choice(sorted(pick_from, key=lambda x: x.get("event_ticker") or x.get("ticker") or ""))
                     try:
                         pathlib.Path(chosen_path).write_text(chosen.get("name","")+"\n")
                     except: pass
@@ -157,10 +174,13 @@ if __name__=="__main__":
     os.chdir(args.dir)
     # log pool size on startup and print chosen market name with python
     try:
-        import pathlib
+        import pathlib, datetime
         pool_path = pathlib.Path("pool.json")
+        hidden_path = pathlib.Path("hidden_pool.json")
         if pool_path.exists():
             pool = json.loads(pool_path.read_text())
+            hidden = json.loads(hidden_path.read_text()) if hidden_path.exists() else []
+            pick_from = hidden if hidden else pool
             from collections import Counter
             cnt = Counter(p.get("broad","?") for p in pool)
             total = len(pool)
@@ -169,6 +189,7 @@ if __name__=="__main__":
                 "ts": datetime.datetime.now(datetime.timezone.utc).isoformat(),
                 "type": "startup",
                 "poolSize": total,
+                "hiddenSize": len(hidden) if hidden else 0,
                 "broadCounts": dict(cnt),
                 "today": datetime.datetime.now(datetime.timezone.utc).date().isoformat(),
             }
@@ -187,8 +208,18 @@ if __name__=="__main__":
             for p in pathlib.Path(os.getcwd()).rglob("__pycache__"):
                 try: shutil.rmtree(p, ignore_errors=True)
                 except: pass
-            pool_sorted = sorted(pool, key=lambda x: x.get("event_ticker") or x.get("ticker") or "")
-            chosen = random.choice(pool_sorted) if pool_sorted else None
+            if hidden:
+                today = datetime.datetime.now(datetime.timezone.utc).date()
+                ref = datetime.date(2026,8,7)
+                days = (today - ref).days
+                idx = days % len(hidden)
+                chosen = hidden[idx]
+                pool_match = next((p for p in pool if p.get("ticker")==chosen.get("ticker")), None)
+                if pool_match: chosen = pool_match
+                print(f"[HIDDEN POOL] {len(hidden)} curated, today idx {idx} -> {chosen.get('ticker')}")
+            else:
+                pool_sorted = sorted(pick_from, key=lambda x: x.get("event_ticker") or x.get("ticker") or "")
+                chosen = random.choice(pool_sorted) if pool_sorted else None
             if chosen:
                 if SHOW_MARKET:
                     print(chosen.get("name",""))

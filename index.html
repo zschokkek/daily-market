@@ -133,9 +133,10 @@ body{background:#fff;color:#121213}
 
 <script>
 const TODAY_ISO = new Date().toISOString().slice(0,10);
-const APP_VERSION = "2026-08-07-perufix1"; // bump on each deploy to bust Pages cache
+const APP_VERSION = "2026-08-07-hidden1"; // bump on each deploy to bust Pages cache
 const MAX_GUESSES = 10;
 let POOL = [];
+let HIDDEN_POOL = null; // curated production hidden picks — if hidden_pool.json exists, TARGET is chosen from it (guesses still from full POOL)
 let TARGET = null;
 let GAVE_UP = false;
 
@@ -253,6 +254,10 @@ async function loadPool(){
   let fallback=null;
   try{ const r=await fetch('./pool.json'); if(r.ok) fallback=await r.json(); }catch(e){}
   if(!fallback) fallback=[];
+  // curated hidden — if present, TARGET is picked from it (guesses still from full pool)
+  try{ const r2=await fetch('./hidden_pool.json'); if(r2.ok){ const j=await r2.json(); if(Array.isArray(j)&&j.length) HIDDEN_POOL=j; } }catch(e){}
+
+  // paginate ALL markets live — no 200 cap (skip on Pages: Kalshi API has no CORS, use pool.json)
 
   // paginate ALL markets live — no 200 cap (skip on Pages: Kalshi API has no CORS, use pool.json)
   let livePool=null;
@@ -574,7 +579,7 @@ async function loadPool(){
 
   // update footer if present, banner removed per user request
   const footerEl=document.getElementById('footer-pool');
-  if(footerEl) footerEl.textContent = `${POOL.length.toLocaleString()} markets`;
+  if(footerEl) footerEl.textContent = `${POOL.length.toLocaleString()} markets${HIDDEN_POOL?` · ${HIDDEN_POOL.length} hidden`:''}`;
 
   await pickTarget();
   restoreState();
@@ -683,23 +688,52 @@ async function pickTarget(){
   const idxKey='kalshi-wordle-target-idx-'+TODAY_ISO;
   const tkKey='kalshi-wordle-target-'+TODAY_ISO;
   const guessesKey='kalshi-wordle-guesses-'+TODAY_ISO;
+  const hiddenSource = (HIDDEN_POOL && HIDDEN_POOL.length) ? HIDDEN_POOL : null;
+  const TARGET_POOL = hiddenSource || POOL; // hidden picks from curated list; guesses still from POOL
   // try to sync with server's random chosen — skip on Pages (no server, 404 noise)
   if(!location.hostname.endsWith('github.io')) try{
     const r=await fetch('/chosen'); if(r.ok){ const srv=await r.json(); if(srv && (srv.ticker||srv.event_ticker)){
       const srvTicker = srv.ticker || srv.event_ticker;
       const stored=localStorage.getItem(tkKey);
-      // also handle date rollover: TODAY_ISO already isolates by date, but server restart on same day should clear guesses
       if(stored && stored!==srvTicker){
         localStorage.removeItem(idxKey); localStorage.removeItem(tkKey); localStorage.removeItem(guessesKey); localStorage.removeItem('kalshi-wordle-gaveup-'+TODAY_ISO);
-        // also clear any in-memory guesses from previous target
         guesses = [];
         GAVE_UP = false;
         console.log('[CACHE] cleared — server new target', srvTicker, '(stored was', stored, ')');
       }
-      const exact=POOL.find(p=>p.ticker===srvTicker || p.event_ticker===srvTicker || p.name===srv.name);
-      if(exact){ TARGET=exact; localStorage.setItem(tkKey, exact.ticker); const i=POOL.indexOf(exact); localStorage.setItem(idxKey, String(i)); return; }
+      const exact=POOL.find(p=>p.ticker===srvTicker || p.event_ticker===srvTicker || p.name===srv.name) || TARGET_POOL.find(p=>p.ticker===srvTicker);
+      if(exact){
+        // map hidden entry to full POOL entry so feedback uses POOL prices/vol
+        const poolExact = POOL.find(p=>p.ticker===exact.ticker) || exact;
+        TARGET=poolExact; localStorage.setItem(tkKey, TARGET.ticker); const i=POOL.indexOf(TARGET); localStorage.setItem(idxKey, String(i>=0?i:0)); return;
+      }
     }}
   }catch(e){}
+  // curated hidden: deterministic daily pick by date so you control order via hidden_pool.json array order
+  // delete hidden_pool.json to go back to random-from-POOL
+  if(hiddenSource){
+    const REF = new Date('2026-08-07T00:00:00Z');
+    const days = Math.floor((new Date(TODAY_ISO+'T00:00:00Z') - REF) / 86400000);
+    // stable index: sequential days modulo length (reorder hidden_pool.json to control sequence)
+    // fallback to hash for non-sequential variety if you shuffle file, both give same result when shuffled
+    let hIdx = ((days % hiddenSource.length) + hiddenSource.length) % hiddenSource.length;
+    // if URL has ?hidden=NUM, override for testing
+    const qHidden = new URLSearchParams(location.search).get('hidden');
+    if(qHidden!==null){ const n=parseInt(qHidden,10); if(!isNaN(n)) hIdx = ((n%hiddenSource.length)+hiddenSource.length)%hiddenSource.length; }
+    const hiddenEntry = hiddenSource[hIdx];
+    const poolMatch = POOL.find(p=>p.ticker===hiddenEntry.ticker) || hiddenEntry;
+    TARGET = poolMatch;
+    localStorage.setItem(tkKey, TARGET.ticker);
+    localStorage.setItem(idxKey, String(POOL.indexOf(TARGET)>=0?POOL.indexOf(TARGET):hIdx));
+    // ?random still forces full-pool random when hidden exists
+    if(new URLSearchParams(location.search).has('random')){
+      const idx = Math.floor(Math.random() * POOL.length);
+      TARGET = POOL[idx];
+      localStorage.setItem(idxKey, String(idx));
+      localStorage.setItem(tkKey, TARGET.ticker);
+    }
+    return;
+  }
   let idx=localStorage.getItem(idxKey);
   if(idx===null){
     idx = Math.floor(Math.random() * POOL.length);
@@ -708,9 +742,9 @@ async function pickTarget(){
   } else idx=Number(idx);
   TARGET = POOL[idx] || POOL[Math.floor(Math.random()*POOL.length)] || POOL[0];
   if(new URLSearchParams(location.search).has('random')){
-    idx = Math.floor(Math.random() * POOL.length);
-    TARGET = POOL[idx];
-    localStorage.setItem(idxKey, String(idx));
+    const idx2 = Math.floor(Math.random() * POOL.length);
+    TARGET = POOL[idx2];
+    localStorage.setItem(idxKey, String(idx2));
     localStorage.setItem(tkKey, TARGET.ticker);
   }
 }
