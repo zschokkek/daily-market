@@ -145,7 +145,7 @@ const BROAD_COLOR = {sports:"#0ea5e9", politics:"#8b5cf6", business:"#f59e0b", p
 
 function toBroad(rawCat, sub, ticker, title){
   const low = ((rawCat||"")+" "+(sub||"")+" "+(ticker||"")+" "+(title||"")).toLowerCase();
-  if((rawCat||"")==="Climate and Weather" || low.includes("weather") || low.includes("temperature") || low.includes("high temp")) return "weather";
+  if((rawCat||"")==="Climate and Weather" || /\bweather\b/.test(low) || low.includes("temperature") || low.includes("high temp")) return "weather";
   if((rawCat||"")==="Sports") return "sports";
   if((rawCat||"")==="Entertainment" || ["music","film","movie","tv","celeb","oscar","grammy","emmy","album","song"].some(k=> low.includes(k))) return "culture";
   let isPrice=false;
@@ -163,10 +163,13 @@ function toBroad(rawCat, sub, ticker, title){
 }
 function cultureSubcat(ticker, title, sub){
   const low=(ticker+" "+title+" "+(sub||"")).toLowerCase();
+  if(["tv","television","show","series","season","cast","winner","elimination","celeb","kardashian","emmy","netflix","hbo","big brother","bachelor","white lotus","dancing with the stars","stranger things","lotus"].some(k=> low.includes(k))){
+    if(["grammy","album","song","spotify","billboard"].some(k=> low.includes(k)) && (low.includes("grammy") || low.includes("billboard") || low.includes("spotify"))) return "MUSIC";
+    return "TV & CELEB";
+  }
   if(["music","song","album","grammy","spotify"].some(k=> low.includes(k))) return "MUSIC";
   if(["film","movie","cinema","oscar","box office"].some(k=> low.includes(k))) return "FILM";
-  if(["tv","television","show","series","celeb","kardashian","emmy","netflix","hbo"].some(k=> low.includes(k))) return "TV & CELEB";
-  return "MUSIC";
+  return "TV & CELEB";
 }
 function pricesSubcat(ticker, title, sub){
   const low=(ticker+" "+title+" "+(sub||"")).toLowerCase();
@@ -175,8 +178,8 @@ function pricesSubcat(ticker, title, sub){
 }
 function businessSubcat(ticker, title, sub){
   const low=(ticker+" "+title+" "+(sub||"")).toLowerCase();
-  if(["tesla","spacex","apple","google","alphabet","microsoft","meta","nvidia","openai","netflix","amazon","tech","ai ","ai,","software","space x"].some(k=> low.includes(k))) return "TECH";
   if(["bank","finance","fed","rate","gdp","inflation","economy","market"].some(k=> low.includes(k))) return "FINANCE";
+  if(["tesla","spacex","apple","google","alphabet","microsoft","meta","nvidia","openai","netflix","amazon","tech","ai ","ai,","software","space x"].some(k=> low.includes(k))) return "TECH";
   if(["company","merger","acquisition","earnings"].some(k=> low.includes(k))) return "CORP";
   return "CORP";
 }
@@ -206,6 +209,7 @@ function sportsSubcat(ticker, title, sub){
   if(s.includes("HOLEINONE")||t.includes("HOLEINONE")||tu.includes("HOLEINONE")||tu.includes("WYNDHAM")||s.includes("WYNDHAM")||s.includes("PGAHOLEINONE")) return "PGA";
   if(s.includes("KXSOCC")||s.includes("SOCCER")||tu.includes("SOCCER")||tu.includes("MLS")) return "Soccer";
   if(s.includes("KXGOLF")||t.includes("KXGOLF")||tu.includes("GOLF")||tu.includes("PGA")||s.includes("GOLF")||s.includes("PGA")||t.includes("GOLF")||t.includes("PGA")) return "Golf";
+  if(s.includes("FLOYDTYSON")||t.includes("FLOYDTYSON")||tu.includes("MAYWEATHER")||tu.includes("TYSON")||tu.includes("FURY")||tu.includes("JOSHUA")||s.includes("BOXING")||tu.includes("BOXING")) return "BOXING";
   if(s.includes("KXTENN")||tu.includes("TENNIS")) return "Tennis";
   if(s.includes("KXUFC")||tu.includes("UFC")||tu.includes("MMA")) return "MMA";
   if(sub){
@@ -299,7 +303,7 @@ async function loadPool(){
       else if(broad==="prices"){ let ps=pricesSubcat(m.ticker||"", m.title||"", sub); detail=`Prices · ${ps}`; subForPool=ps; }
       else if(broad==="culture"){ let cs=cultureSubcat(m.ticker||"", m.title||"", sub); detail=`Culture · ${cs}`; subForPool=cs; }
       else if(broad==="business"){ let bs=businessSubcat(m.ticker||"", m.title||"", sub); subForPool=bs; detail = raw ? `${raw} · ${bs}` : `Business · ${bs}`; }
-      else if(broad==="politics"){ const up=(m.ticker||"").toUpperCase(); const tu=(m.title||"").toUpperCase(); let pl="ELECT"; if(up.includes("HOUSE")||up.includes("KXHOUSE")) pl="HOUSE"; else if(tu.includes("SENATE")||up.includes("SENATE")) pl="SENATE"; else if(tu.includes("GOVERNOR")||up.includes("GOV")) pl="GOV"; else if(tu.includes("PRESIDENT")||tu.includes("PRESIDENTIAL")||up.startsWith("KX2028")) pl="PRES"; else if(tu.includes("TRUMP")||up.includes("TRUMP")){ const foreign=["ISRAEL","SAUDI","QATAR","SYRIA","PANAMA","TAIWAN","KIM JONG","NORTH KOREA","CHINA","IRAN"]; pl= foreign.some(f=>tu.includes(f))?"ELECT":"TRUMP"; } subForPool=pl; detail=`Politics · ${pl}`; }
+      else if(broad==="politics"){ const up=(m.ticker||"").toUpperCase(); const tu=(m.title||"").toUpperCase(); let pl="ELECT"; if(up.includes("HOUSE")||tu.includes("HOUSE")||up.includes("KXHOUSE")) pl="HOUSE"; else if(tu.includes("SENATE")||up.includes("SENATE")) pl="SENATE"; else if(tu.includes("GOVERNOR")||up.includes("GOV")) pl="GOV"; else if(tu.includes("PRESIDENT")||tu.includes("PRESIDENTIAL")||up.startsWith("KX2028")) pl="PRES"; else if(tu.includes("TRUMP")||up.includes("TRUMP")){ const foreign=["ISRAEL","SAUDI","QATAR","SYRIA","PANAMA","TAIWAN","KIM JONG","NORTH KOREA","CHINA","IRAN"]; pl= foreign.some(f=>tu.includes(f))?"ELECT":"TRUMP"; } subForPool=pl; detail=`Politics · ${pl}`; }
       else { subForPool=(sub||broad); detail = (raw && subForPool) ? `${raw} · ${subForPool}` : (raw||broad); }
       let vol = m.volume || m.volume_24h || 0;
       vol = Number(vol)||0;
@@ -343,7 +347,7 @@ async function loadPool(){
         else if(broad==="prices"){ let ps=pricesSubcat(mk.ticker||"", name, sub); detail=`Prices · ${ps}`; subFinal=ps; }
         else if(broad==="culture"){ let cs=cultureSubcat(mk.ticker||"", name, sub); detail=`Culture · ${cs}`; subFinal=cs; }
         else if(broad==="business"){ let bs=businessSubcat(mk.ticker||"", name, sub); subFinal=bs; detail=(raw && bs)?`${raw} · ${bs}`: `Business · ${bs}`; }
-        else if(broad==="politics"){ const up=(mk.ticker||"").toUpperCase(); const tu=(name||"").toUpperCase(); let pl="ELECT"; if(up.includes("HOUSE")||up.includes("KXHOUSE")) pl="HOUSE"; else if(tu.includes("SENATE")||up.includes("SENATE")) pl="SENATE"; else if(tu.includes("GOVERNOR")||up.includes("GOV")) pl="GOV"; else if(tu.includes("PRESIDENT")||tu.includes("PRESIDENTIAL")||up.startsWith("KX2028")) pl="PRES"; else if(tu.includes("TRUMP")||up.includes("TRUMP")){ const foreign=["ISRAEL","SAUDI","QATAR","SYRIA","PANAMA","TAIWAN","KIM JONG","NORTH KOREA","CHINA","IRAN"]; pl= foreign.some(f=>tu.includes(f))?"ELECT":"TRUMP"; } subFinal=pl; detail=`Politics · ${pl}`; }
+        else if(broad==="politics"){ const up=(mk.ticker||"").toUpperCase(); const tu=(name||"").toUpperCase(); let pl="ELECT"; if(up.includes("HOUSE")||tu.includes("HOUSE")||up.includes("KXHOUSE")) pl="HOUSE"; else if(tu.includes("SENATE")||up.includes("SENATE")) pl="SENATE"; else if(tu.includes("GOVERNOR")||up.includes("GOV")) pl="GOV"; else if(tu.includes("PRESIDENT")||tu.includes("PRESIDENTIAL")||up.startsWith("KX2028")) pl="PRES"; else if(tu.includes("TRUMP")||up.includes("TRUMP")){ const foreign=["ISRAEL","SAUDI","QATAR","SYRIA","PANAMA","TAIWAN","KIM JONG","NORTH KOREA","CHINA","IRAN"]; pl= foreign.some(f=>tu.includes(f))?"ELECT":"TRUMP"; } subFinal=pl; detail=`Politics · ${pl}`; }
         else { subFinal=(sub||broad); detail=(raw && subFinal)?`${raw} · ${subFinal}`: (raw||broad); }
         livePool.push({name, broad, subcat: subFinal, category:detail, raw_category:raw||broad, strikes, expiration:exp, expDay, volume:Math.round(vol), ticker: mk.ticker||mk.ticker_name||ev.event_ticker, event_ticker: ev.event_ticker});
       }
@@ -440,7 +444,7 @@ async function loadPool(){
     else if(broad==="prices" && (!cat || cat===broad || cat==="prices")){ const ps=pricesSubcat(p.ticker||"", p.name||"", p.subcat||""); cat=`Prices · ${ps}`; sub=ps; }
     else if(broad==="culture" && (!cat || cat===broad || cat==="culture")){ const cs=cultureSubcat(p.ticker||"", p.name||"", p.subcat||""); cat=`Culture · ${cs}`; sub=cs; }
     else if(broad==="business" && (!sub || !cat || cat===broad || cat==="business")){ const bs=businessSubcat(p.ticker||"", p.name||"", p.subcat||""); sub=bs; cat = p.raw_category && p.raw_category!==broad ? `${p.raw_category} · ${bs}` : `Business · ${bs}`; }
-    else if(broad==="politics"){ const up=(p.ticker||"").toUpperCase(); const tu=(p.name||"").toUpperCase(); let pl="ELECT"; if(up.includes("HOUSE")||up.includes("KXHOUSE")) pl="HOUSE"; else if(tu.includes("SENATE")||up.includes("SENATE")) pl="SENATE"; else if(tu.includes("GOVERNOR")||up.includes("GOV")) pl="GOV"; else if(tu.includes("PRESIDENT")||tu.includes("PRESIDENTIAL")||up.startsWith("KX2028")) pl="PRES"; else if(tu.includes("TRUMP")||up.includes("TRUMP")){ const foreign=["ISRAEL","SAUDI","QATAR","SYRIA","PANAMA","TAIWAN","KIM JONG","NORTH KOREA","CHINA","IRAN"]; pl= foreign.some(f=>tu.includes(f))?"ELECT":"TRUMP"; } sub=pl; cat=`Politics · ${pl}`; }
+    else if(broad==="politics"){ const up=(p.ticker||"").toUpperCase(); const tu=(p.name||"").toUpperCase(); let pl="ELECT"; if(up.includes("HOUSE")||tu.includes("HOUSE")||up.includes("KXHOUSE")) pl="HOUSE"; else if(tu.includes("SENATE")||up.includes("SENATE")) pl="SENATE"; else if(tu.includes("GOVERNOR")||up.includes("GOV")) pl="GOV"; else if(tu.includes("PRESIDENT")||tu.includes("PRESIDENTIAL")||up.startsWith("KX2028")) pl="PRES"; else if(tu.includes("TRUMP")||up.includes("TRUMP")){ const foreign=["ISRAEL","SAUDI","QATAR","SYRIA","PANAMA","TAIWAN","KIM JONG","NORTH KOREA","CHINA","IRAN"]; pl= foreign.some(f=>tu.includes(f))?"ELECT":"TRUMP"; } sub=pl; cat=`Politics · ${pl}`; }
     else { sub=(sub||broad); }
     // location: state if USA, country if not, N/A for prices, businesses have state — includes full state names for MA/CA etc.
     let loc=p.location;
@@ -716,7 +720,7 @@ function getSportFamily(sub){
   if(["SOCCER","MLS","EPL","LEAGUESCUP","UCL","UECL","COPPAITALIA","UEL","COPADOBRASIL","LALIGA","BUNDESLIGA","SERIEA","LIGUE1","CONMEBOL","COPAAMERICA"].some(k=> s.includes(k)) || s.includes("SOCCER") || s.includes("LEAGUE") || s.includes("CUP")) return "soccer";
   if(["GOLF","PGA","HOLEIN","WYNDHAM","KFT","KORN","LPGA"].some(k=> s.includes(k)) || s.includes("GOLF") || s.includes("PGA") || s.includes("HOLEIN") || s.includes("WYNDHAM") || s.includes("KFT") || s.includes("KORN") || s.includes("LPGA")) return "golf";
   if(["TENNIS","ATP","WTA","WTAFINALS"].some(k=> s.includes(k)) || s.includes("TENN") || s.includes("ATP") || s.includes("WTA")) return "tennis";
-  if(["MMA","UFC","BOXING","WBC","FURY","JOSHUA"].some(k=> s.includes(k)) || s.includes("MMA") || s.includes("UFC")) return "combat";
+  if(["MMA","UFC","BOXING","WBC","FURY","JOSHUA","TYSON","MAYWEATHER","FLOYD"].some(k=> s.includes(k)) || s.includes("MMA") || s.includes("UFC")) return "combat";
   if(["ESPORTS","LOL","CS2"].some(k=> s.includes(k)) || s.includes("ESPORT")) return "esports";
   if(["F1","NASCAR","INDYCAR","MOTOGP"].some(k=> s.includes(k)) || s.includes("RACING") || s.includes("NASCAR") || s.includes("F1")) return "racing";
   if(["CHESS","FIDE"].some(k=> s.includes(k)) || s.includes("CHESS") || s.includes("FIDE")) return "chess";

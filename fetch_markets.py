@@ -49,7 +49,8 @@ def to_broad(category, subcategory, ticker, title):
     if isinstance(sub, dict):
         sub=",".join([str(v) for vs in sub.values() for v in (vs if isinstance(vs,list) else [vs])])
     low=(cat+" "+sub+" "+ticker+" "+title).lower()
-    if cat=="Climate and Weather" or "weather" in low or "temperature" in low or "high temp" in low:
+    import re as _re
+    if cat=="Climate and Weather" or _re.search(r'\bweather\b', low) or "temperature" in low or "high temp" in low:
         return "weather"
     if cat=="Sports":
         return "sports"
@@ -87,26 +88,32 @@ def prices_subcat(ticker, title, subcategory):
 
 def business_subcat(ticker, title, subcategory):
     low=(ticker+" "+title+" "+(subcategory or "")).lower()
+    # finance keywords first — e.g., "Which bank will lead OpenAI's IPO?" should be FINANCE not TECH
+    if any(k in low for k in ["bank","finance","fed","rate","gdp","inflation","economy","market"]):
+        return "FINANCE"
     # intuitive for normal user: TECH for tech companies/mergers
     if any(k in low for k in ["tesla","spacex","apple","google","alphabet","microsoft","meta","nvidia","openai","netflix","amazon","tech","ai ","ai,","software","space x"]):
         return "TECH"
-    if any(k in low for k in ["bank","finance","fed","rate","gdp","inflation","economy","market"]):
-        return "FINANCE"
     if any(k in low for k in ["company","merger","acquisition","earnings"]):
         return "CORP"
     return "CORP"
 
 def culture_subcat(ticker, title, subcategory):
     low=(ticker+" "+title+" "+(subcategory or "")).lower()
-    # DETAIL should never be less than 5 letters — enforce minimum 5
+    # TV shows first — Big Brother, White Lotus, Bachelor etc were defaulting to MUSIC incorrectly
+    if any(k in low for k in ["tv","television","show","series","season","cast","winner","elimination","celeb","kardashian","emmy","netflix","hbo","big brother","bachelor","white lotus","dancing with the stars","stranger things","lotus"]):
+        # but Grammy/Music winners should stay MUSIC, not TV — check music first if grammy/album
+        if any(k in low for k in ["grammy","album","song","spotify","billboard","spotify"]):
+            # e.g., Grammy winner: Album of the Year should be MUSIC, not TV
+            if "grammy" in low or "billboard" in low or "spotify" in low:
+                return "MUSIC"
+        return "TV & CELEB"
     if any(k in low for k in ["music","song","album","grammy","spotify"]):
         return "MUSIC"  # 5 letters
     if any(k in low for k in ["film","movie","cinema","oscar","box office"]):
         return "FILM"  # 4 letters but padded to meet 5? user wants FILM exactly, we'll keep FILM and pad display
-    if any(k in low for k in ["tv","television","show","series","celeb","kardashian","emmy","netflix","hbo"]):
-        return "TV & CELEB"
-    # default based on broad culture: rotate to ensure >=5
-    return "MUSIC"
+    # default based on broad culture: Entertainment with no music/film/tv keywords -> TV & CELEB (more intuitive than MUSIC for reality TV)
+    return "TV & CELEB"
 
 def get_sport_family(sub):
     s=(sub or "").upper()
@@ -117,7 +124,7 @@ def get_sport_family(sub):
     if any(k in s for k in ["SOCCER","MLS","EPL","LEAGUESCUP","UCL","UECL","COPPAITALIA","UEL","COPADOBRASIL","LALIGA","BUNDESLIGA","SERIEA","LIGUE1","CONMEBOL","COPAAMERICA","LEAGUE","CUP"]): return "soccer"
     if any(k in s for k in ["GOLF","PGA","HOLEIN","WYNDHAM","KFT","KORN","LPGA"]): return "golf"
     if any(k in s for k in ["TENNIS","ATP","WTA","WTAFINALS"]): return "tennis"
-    if any(k in s for k in ["MMA","UFC","BOXING","WBC","FURY","JOSHUA"]): return "combat"
+    if any(k in s for k in ["MMA","UFC","BOXING","WBC","FURY","JOSHUA","TYSON","MAYWEATHER","FLOYD"]): return "combat"
     if any(k in s for k in ["ESPORTS","LOL","CS2"]): return "esports"
     if any(k in s for k in ["F1","NASCAR","INDYCAR","MOTOGP","RACING"]): return "racing"
     if any(k in s for k in ["CHESS","FIDE"]): return "chess"
@@ -161,6 +168,8 @@ def sports_subcat(ticker, title, subcategory):
         return "Golf"
     if "KXTENN" in s or "TENNIS" in tu:
         return "Tennis"
+    if "FLOYDTYSON" in s or "FLOYDTYSON" in t or "MAYWEATHER" in tu or "TYSON" in tu or "FURY" in tu or "JOSHUA" in tu or "BOXING" in tu or "BOXING" in s:
+        return "BOXING"
     if "KXUFC" in s or "UFC" in tu or "MMA" in tu:
         return "MMA"
     if subcategory:
@@ -619,7 +628,7 @@ for ev in events:
         ticker_up = (ev.get("event_ticker","") or "").upper()
         title_up = (ev.get("title") or "").upper()
         # intuitive buckets: SENATE / HOUSE / GOV / PRES / TRUMP / ELECT — TRUMP only for direct Trump actions, not "during Trump's term" foreign policy
-        if "HOUSE" in ticker_up or "KXHOUSE" in ticker_up:
+        if "HOUSE" in ticker_up or "HOUSE" in title_up or "KXHOUSE" in ticker_up:
             pl = "HOUSE"
         elif "SENATE" in title_up or "SENATE" in ticker_up:
             pl = "SENATE"
