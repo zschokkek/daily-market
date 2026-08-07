@@ -775,7 +775,11 @@ function feedback(guess, target){
 
 function addRow(guess, animate){
   const empty=document.getElementById('empty'); if(empty) empty.remove();
-  const fb=feedback(guess, TARGET);
+  let fb=feedback(guess, TARGET);
+  // give-up reveal should not be highlighted green
+  if(GAVE_UP && guess.ticker===TARGET.ticker){
+    fb={broad:'gray',sub:'gray',loc:'gray',lArrow:'',strike:'gray',sArrow:'',exp:'gray',eArrow:'',vol:'gray',vArrow:'',price:'gray',pArrow:'',name:'gray'};
+  }
   const board=document.getElementById('board');
   const row=document.createElement('div');
   row.className='grid grid-cols-[1.4fr_0.65fr_0.5fr_0.48fr_0.35fr_0.4fr_0.55fr_0.5fr] gap-1.5';
