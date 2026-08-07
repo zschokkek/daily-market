@@ -763,11 +763,16 @@ function feedback(guess, target){
       if(loc==='green') lArrow='';
     }
   } else {
-    // non-state locs: still try arrow if both states known, else try country
+    // mixed US state vs foreign country — two arrows directionally (e.g., NY → Israel = ↓→)
     const from=COUNTRY_COORDS[guess.location]||STATE_COORDS[guess.location], to=COUNTRY_COORDS[target.location]||STATE_COORDS[target.location];
     if(from && to && loc!=='green'){
       const dLat=to[0]-from[0], dLon=to[1]-from[1];
-      lArrow = Math.abs(dLat) > Math.abs(dLon) ? (dLat>0 ? ' ↑' : ' ↓') : (dLon>0 ? ' →' : ' ←');
+      const isMixed = (isUS(guess.location) && isForeign(target.location)) || (isForeign(guess.location) && isUS(target.location));
+      if(isMixed){
+        lArrow = ` ${dLat>0 ? '↑' : '↓'}${dLon>0 ? '→' : '←'}`;
+      } else {
+        lArrow = Math.abs(dLat) > Math.abs(dLon) ? (dLat>0 ? ' ↑' : ' ↓') : (dLon>0 ? ' →' : ' ←');
+      }
     }
   }
   // strikes
