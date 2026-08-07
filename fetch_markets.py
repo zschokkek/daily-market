@@ -82,6 +82,21 @@ def to_broad(category, subcategory, ticker, title):
 
 def prices_subcat(ticker, title, subcategory):
     low=(ticker+" "+title+" "+(subcategory or "")).lower()
+    # 15 min / hourly as own subcats — e.g., Bitcoin 15 Min, Gold 1 Hour
+    is_15 = "15 min" in low
+    is_hourly = "hourly" in low or "price range" in low
+    # detect asset
+    asset = None
+    if any(k in low for k in ["btc","bitcoin"]): asset="BTC"
+    elif any(k in low for k in ["eth","ethereum"]): asset="ETH"
+    elif any(k in low for k in ["sol","solana"]): asset="SOL"
+    elif any(k in low for k in ["gold","xau"]): asset="GOLD"
+    elif any(k in low for k in ["bnb"]): asset="BNB"
+    elif any(k in low for k in ["hype"]): asset="HYPE"
+    if asset and is_15:
+        return f"{asset} 15M"
+    if asset and is_hourly:
+        return f"{asset} 1H"
     if any(k in low for k in ["btc","eth","sol","xrp","doge","bitcoin","ethereum","solana","crypto"]):
         return "crypto"
     return "CMDTY"
@@ -449,8 +464,8 @@ print(f"Fetching — today {today_iso} now {now.isoformat()}")
 
 events = fetch_all_events()
 print(f"Fetched {len(events)} events")
-# Also fetch sports + short-term crypto + Rotten Tomatoes film series directly to ensure beyond cursor
-for series in ["KXMLBGAME","KXWNBAGAME","KXLOLGAME","KXNFLGAME","KXNBA","KXSOCCER","KXGOLF","KXBTC","KXBTCD","KXETH","KXETHD","KXSOL","KXSOLE","KXBNB","KXHYPE","KXRT"]:
+# Also fetch sports + short-term crypto (hourly + 15 min) + Rotten Tomatoes film series directly to ensure beyond cursor
+for series in ["KXMLBGAME","KXWNBAGAME","KXLOLGAME","KXNFLGAME","KXNBA","KXSOCCER","KXGOLF","KXBTC","KXBTCD","KXETH","KXETHD","KXSOL","KXSOLE","KXBNB","KXHYPE","KXRT","KXBTC15M","KXETH15M","KXGOLD15M","KXSOL15M"]:
     try:
         url=f"{BASE}/events?series_ticker={series}&status=open&with_nested_markets=true&limit=100"
         data=fetch_json(url)
@@ -576,7 +591,7 @@ for ev in events:
         vol_sum = abs(hash(ev.get("event_ticker","")) % 80000)+5000
     # filter out tiny volume markets <10k as requested — but keep short-term crypto price ranges even if <10k (they're 5pm ET daily, vol builds intraday; user wants them)
     if vol_sum < 10000:
-        is_short_crypto = broad=="prices" and any(k in (ev.get("event_ticker","")+ev.get("title","")).lower() for k in ["kxbtc","kxeth","kxbnb","kxhype","kxsol","price range","price on"])
+        is_short_crypto = broad=="prices" and any(k in (ev.get("event_ticker","")+ev.get("title","")).lower() for k in ["kxbtc","kxeth","kxsol","kxgold","kxbnb","kxhype","15 min","price range","price on"])
         # check exp today/tomorrow for price ranges
         if not (is_short_crypto and exp_day in (today_iso, tomorrow_iso)):
             continue
@@ -983,6 +998,26 @@ for p in pool:
 
 # filter near-certain bunched and any residual ≥97¢ (carry-through, but keep Rotten Tomatoes multi-strike)
 pool = [p for p in pool if p.get("price", 0) < 97 or (p.get("broad")=="culture" and p.get("subcat")=="FILM" and "rotten" in (p.get("name","") or "").lower())]
+
+# apply manual pool overrides (dev tool) — so you can fix my tags without repulling everything
+try:
+    import pathlib
+    ov_path = pathlib.Path(__file__).parent / "pool_overrides.json"
+    if ov_path.exists():
+        overrides = json.loads(ov_path.read_text())
+        if overrides:
+            fixed=0
+            for p in pool:
+                ov = overrides.get(p.get("ticker")) or overrides.get(p.get("event_ticker"))
+                if ov:
+                    for k in ("broad","subcat","category","location","name","raw_category"):
+                        if k in ov and ov[k]:
+                            p[k]=ov[k]
+                    fixed+=1
+            if fixed:
+                print(f"Applied {fixed} pool overrides from pool_overrides.json")
+except Exception as e:
+    print(f"[overrides] failed: {e}")
 
 pool.sort(key=lambda x: x["event_ticker"])
 

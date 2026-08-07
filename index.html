@@ -173,6 +173,17 @@ function cultureSubcat(ticker, title, sub){
 }
 function pricesSubcat(ticker, title, sub){
   const low=(ticker+" "+title+" "+(sub||"")).toLowerCase();
+  const is15 = low.includes("15 min");
+  const isHourly = low.includes("hourly") || low.includes("price range");
+  let asset=null;
+  if(["btc","bitcoin"].some(k=> low.includes(k))) asset="BTC";
+  else if(["eth","ethereum"].some(k=> low.includes(k))) asset="ETH";
+  else if(["sol","solana"].some(k=> low.includes(k))) asset="SOL";
+  else if(["gold","xau"].some(k=> low.includes(k))) asset="GOLD";
+  else if(["bnb"].some(k=> low.includes(k))) asset="BNB";
+  else if(["hype"].some(k=> low.includes(k))) asset="HYPE";
+  if(asset && is15) return `${asset} 15M`;
+  if(asset && isHourly) return `${asset} 1H`;
   if(["btc","eth","sol","xrp","doge","bitcoin","ethereum","solana","crypto"].some(k=> low.includes(k))) return "crypto";
   return "CMDTY";
 }
@@ -252,6 +263,9 @@ async function loadPool(){
   let fallback=null;
   try{ const r=await fetch('./pool.json'); if(r.ok) fallback=await r.json(); }catch(e){}
   if(!fallback) fallback=[];
+  // pool overrides — manual tag fixes via dev tool (pool_overrides.json)
+  let poolOverrides=null;
+  try{ const r0=await fetch('./pool_overrides.json'); if(r0.ok){ const j=await r0.json(); if(j && Object.keys(j).length) poolOverrides=j; } }catch(e){}
   // curated hidden — if present, TARGET is picked from it (guesses still from full pool)
   try{ const r2=await fetch('./hidden_pool.json'); if(r2.ok){ const j=await r2.json(); if(Array.isArray(j)&&j.length) HIDDEN_POOL=j; } }catch(e){}
 
@@ -541,6 +555,20 @@ async function loadPool(){
     ticker: p.ticker,
     event_ticker: p.event_ticker
   }});
+  // apply pool overrides (manual tag fixes) before any poolVersion/cache logic
+  if(poolOverrides){
+    let fixed=0;
+    for(const p of POOL){
+      const ov=poolOverrides[p.ticker] || poolOverrides[p.event_ticker];
+      if(ov){
+        for(const k of ["broad","subcat","category","location","name","raw_category"]){
+          if(ov[k]) p[k]=ov[k];
+        }
+        fixed++;
+      }
+    }
+    if(fixed) console.log(`[overrides] applied ${fixed} pool tag fixes`);
+  }
   POOL.sort((a,b)=> a.ticker.localeCompare(b.ticker));
 
   // GitHub Pages cache-bust: pool/app changed (push) must clear old guesses/target even with no server (/chosen 404)
