@@ -133,7 +133,7 @@ body{background:#fff;color:#121213}
 
 <script>
 const TODAY_ISO = new Date().toISOString().slice(0,10);
-const APP_VERSION = "2026-08-07-hidden1"; // bump on each deploy to bust Pages cache
+const APP_VERSION = "2026-08-07-hidden2"; // bump on each deploy to bust Pages cache
 const MAX_GUESSES = 10;
 let POOL = [];
 let HIDDEN_POOL = null; // curated production hidden picks — if hidden_pool.json exists, TARGET is chosen from it (guesses still from full POOL)
@@ -721,6 +721,13 @@ async function pickTarget(){
     const hiddenEntry = hiddenSource[hIdx];
     const poolMatch = POOL.find(p=>p.ticker===hiddenEntry.ticker) || hiddenEntry;
     TARGET = poolMatch;
+    // if hidden_pool changed intraday (you reordered/re-exported same date), bust old guesses
+    const stored = localStorage.getItem(tkKey);
+    if(stored && stored!==TARGET.ticker){
+      localStorage.removeItem(guessesKey); localStorage.removeItem('kalshi-wordle-gaveup-'+TODAY_ISO);
+      guesses=[]; GAVE_UP=false;
+      console.log('[HIDDEN] bust — hidden_pool changed', stored,'->',TARGET.ticker);
+    }
     localStorage.setItem(tkKey, TARGET.ticker);
     localStorage.setItem(idxKey, String(POOL.indexOf(TARGET)>=0?POOL.indexOf(TARGET):hIdx));
     // ?random still forces full-pool random when hidden exists
