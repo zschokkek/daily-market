@@ -108,11 +108,12 @@ class Handler(SimpleHTTPRequestHandler):
         # append to log
         with open(LOG_FILE,"a") as f:
             f.write(json.dumps(entry)+"\n")
-        # python terminal logging — just the name text as requested
+        # python terminal logging — hidden unless --show-market / KALSHI_SHOW_MARKET=1
         if data.get("type")=="chosen":
             target = data.get("target")
             name = target.get("name") if isinstance(target, dict) else str(target)
-            print(name)
+            if SHOW_MARKET: print(name)
+            else: print("[HIDDEN] market chosen (use --show-market to reveal)")
             # also log plain name to file for inspection
             with open(os.path.join(os.getcwd(), "chosen.txt"),"a") as f:
                 f.write(name+"\n")
@@ -121,7 +122,9 @@ class Handler(SimpleHTTPRequestHandler):
         else:
             name = data.get("target")
             if isinstance(name, dict): name = name.get("name","")
-            if name: print(name)
+            if name:
+                if SHOW_MARKET: print(name)
+                else: print("[HIDDEN]")
         self.send_response(200)
         self.send_header("Content-Type","application/json")
         self.send_header("Access-Control-Allow-Origin","*")
@@ -144,7 +147,9 @@ if __name__=="__main__":
     ap=argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=8000)
     ap.add_argument("--dir", default=os.path.dirname(__file__))
+    ap.add_argument("--show-market", action="store_true", help="show hidden market name in logs (otherwise hidden unless KALSHI_SHOW_MARKET=1)")
     args=ap.parse_args()
+    SHOW_MARKET = args.show_market or os.environ.get("KALSHI_SHOW_MARKET")=="1" or os.environ.get("SHOW_MARKET")=="1"
     os.chdir(args.dir)
     # log pool size on startup and print chosen market name with python
     try:
@@ -181,7 +186,10 @@ if __name__=="__main__":
             pool_sorted = sorted(pool, key=lambda x: x.get("event_ticker") or x.get("ticker") or "")
             chosen = random.choice(pool_sorted) if pool_sorted else None
             if chosen:
-                print(chosen.get("name",""))
+                if SHOW_MARKET:
+                    print(chosen.get("name",""))
+                else:
+                    print("[HIDDEN] market chosen (use --show-market to reveal)")
                 with open(os.path.join(os.getcwd(), "chosen.txt"),"w") as f:
                     f.write(chosen.get("name","")+"\n")
                 # also log to chosen.log fresh
