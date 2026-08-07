@@ -133,6 +133,7 @@ body{background:#fff;color:#121213}
 
 <script>
 const TODAY_ISO = new Date().toISOString().slice(0,10);
+const APP_VERSION = "2026-08-07-3911f37"; // bump on each deploy to bust Pages cache
 const MAX_GUESSES = 10;
 let POOL = [];
 let TARGET = null;
@@ -253,9 +254,10 @@ async function loadPool(){
   try{ const r=await fetch('./pool.json'); if(r.ok) fallback=await r.json(); }catch(e){}
   if(!fallback) fallback=[];
 
-  // paginate ALL markets live — no 200 cap
+  // paginate ALL markets live — no 200 cap (skip on Pages: Kalshi API has no CORS, use pool.json)
   let livePool=null;
-  try{
+  const isPages = location.hostname.endsWith('github.io');
+  if(!isPages) try{
     const allMarkets = await fetchAllMarketsPaginated();
     const allEvents = await fetchAllEventsPaginated(); // for strikes enrichment
     const eventLookup=new Map();
@@ -431,7 +433,7 @@ async function loadPool(){
       // use live if we got a real pool
       // keep fallback merge? no, live is truth
     } else livePool=null;
-  }catch(e){ console.warn("live paginated load failed", e); livePool=null; }
+  }catch(e){ if(!isPages) console.warn("live paginated load failed", e); livePool=null; }
 
   POOL = (livePool && livePool.length) ? livePool : (fallback||[]);
   // normalize
@@ -538,26 +540,33 @@ async function loadPool(){
   }});
   POOL.sort((a,b)=> a.ticker.localeCompare(b.ticker));
 
-  // GitHub Pages cache-bust: pool changed (push) must clear old guesses/target even with no server (/chosen 404)
+  // GitHub Pages cache-bust: pool/app changed (push) must clear old guesses/target even with no server (/chosen 404)
+  // fixes: prior used wrong keys (no TODAY_ISO) and poolVersion unchanged when only index.html changed
   try{
+    const idxKey='kalshi-wordle-target-idx-'+TODAY_ISO, tkKey='kalshi-wordle-target-'+TODAY_ISO;
+    const guessesKey='kalshi-wordle-guesses-'+TODAY_ISO, gaveKey='kalshi-wordle-gaveup-'+TODAY_ISO;
+    // app version bust — fires on any deploy (index.html change), even if pool.json same
+    const storedApp = localStorage.getItem('kalshi-wordle-app-version');
+    if(storedApp && storedApp!==APP_VERSION){
+      localStorage.removeItem(idxKey); localStorage.removeItem(tkKey);
+      localStorage.removeItem(guessesKey); localStorage.removeItem(gaveKey);
+      guesses=[]; GAVE_UP=false;
+      console.log('[CACHE] cleared app version', storedApp,'->',APP_VERSION);
+    }
+    localStorage.setItem('kalshi-wordle-app-version', APP_VERSION);
     const poolVersion = `${POOL.length}:${POOL[0]?.ticker||''}:${POOL[POOL.length-1]?.ticker||''}:${POOL[0]?.name?.slice(0,20)||''}`;
     const storedVersion = localStorage.getItem('kalshi-wordle-pool-version');
     if(storedVersion && storedVersion!==poolVersion){
-      const tkKey='kalshi-wordle-target-ticker', idxKey='kalshi-wordle-target-idx';
-      localStorage.removeItem(tkKey); localStorage.removeItem(idxKey);
-      localStorage.removeItem('kalshi-wordle-guesses-'+TODAY_ISO);
-      localStorage.removeItem('kalshi-wordle-gaveup-'+TODAY_ISO);
+      localStorage.removeItem(idxKey); localStorage.removeItem(tkKey);
+      localStorage.removeItem(guessesKey); localStorage.removeItem(gaveKey);
       guesses=[]; GAVE_UP=false;
       console.log('[CACHE] cleared pool version change', storedVersion, '->', poolVersion);
     }
     localStorage.setItem('kalshi-wordle-pool-version', poolVersion);
-    // also if stored target no longer in pool (market expired/removed), clear
-    const storedTicker = localStorage.getItem('kalshi-wordle-target-ticker');
+    const storedTicker = localStorage.getItem(tkKey);
     if(storedTicker && !POOL.some(p=>p.ticker===storedTicker || p.event_ticker===storedTicker)){
-      const tkKey='kalshi-wordle-target-ticker', idxKey='kalshi-wordle-target-idx';
-      localStorage.removeItem(tkKey); localStorage.removeItem(idxKey);
-      localStorage.removeItem('kalshi-wordle-guesses-'+TODAY_ISO);
-      localStorage.removeItem('kalshi-wordle-gaveup-'+TODAY_ISO);
+      localStorage.removeItem(idxKey); localStorage.removeItem(tkKey);
+      localStorage.removeItem(guessesKey); localStorage.removeItem(gaveKey);
       guesses=[]; GAVE_UP=false;
       console.log('[CACHE] cleared stale target not in pool', storedTicker);
     }
@@ -570,10 +579,10 @@ async function loadPool(){
   await pickTarget();
   restoreState();
   renderAutocomplete('');
-  // log chosen market to server
-  logChosen();
-  // grab live favorite price as user opens page — refresh from API, don't rely on stale pool.json
-  refreshLivePrices().catch(()=>{});
+  // log chosen market to server — skip on Pages (no server)
+  if(!isPages) logChosen();
+  // grab live favorite price — skip on Pages (CORS), pool.json is truth there
+  if(!isPages) refreshLivePrices().catch(()=>{});
 }
 
 async function fetchAllMarketsPaginated(){
@@ -674,8 +683,8 @@ async function pickTarget(){
   const idxKey='kalshi-wordle-target-idx-'+TODAY_ISO;
   const tkKey='kalshi-wordle-target-'+TODAY_ISO;
   const guessesKey='kalshi-wordle-guesses-'+TODAY_ISO;
-  // try to sync with server's random chosen — if server picked new market (new day or restart), clear cache
-  try{
+  // try to sync with server's random chosen — skip on Pages (no server, 404 noise)
+  if(!location.hostname.endsWith('github.io')) try{
     const r=await fetch('/chosen'); if(r.ok){ const srv=await r.json(); if(srv && (srv.ticker||srv.event_ticker)){
       const srvTicker = srv.ticker || srv.event_ticker;
       const stored=localStorage.getItem(tkKey);
