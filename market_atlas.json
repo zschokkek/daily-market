@@ -1,15 +1,15 @@
 {
-  "fetched_at": "2026-08-07T20:11:44.207746+00:00",
+  "fetched_at": "2026-08-07T20:26:58.939359+00:00",
   "today": "2026-08-07",
   "events_scanned": 6106,
-  "pool_size": 1707,
+  "pool_size": 1702,
   "broad_counts": {
-    "politics": 618,
-    "business": 373,
-    "culture": 164,
+    "politics": 620,
+    "business": 368,
+    "culture": 163,
     "weather": 23,
-    "prices": 40,
-    "sports": 489
+    "prices": 37,
+    "sports": 491
   },
   "broad_order": [
     "sports",
