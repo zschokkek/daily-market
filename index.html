@@ -803,7 +803,7 @@ function renderAutocomplete(q){
   const raw=(q||'').trim().toLowerCase();
   if(!raw){ ac.classList.add('hidden'); ac.innerHTML=''; return; }
   if(!POOL.length){ ac.classList.add('hidden'); return; }
-    // alias map: every league -> 10-20 words people type — quick lookup, no hardcoded ifs
+    // alias map: every league/category -> 10-20 words people type — quick lookup
   const LEAGUE_ALIASES = {
     nfl: ["nfl","pro football","football","nfl football","pro fb","national football league","nfl prop","nfl future"],
     nba: ["nba","pro basketball","basketball","national basketball association","nba prop"],
@@ -819,7 +819,14 @@ function renderAutocomplete(q){
     ufc: ["ufc","mma","mixed martial arts","mma fight","boxing","wbc","ufc fight"],
     esports: ["esports","lol","league of legends","cs2","valorant"],
     sb: ["super bowl","superbowl","sb","pro football champion","championship game","super bowl champion","sb champ","big game"],
-    weather: ["weather","heat","rain","hurricane","snow","quake"],
+    weather: ["weather","heat","rain","hurricane","snow","quake","temperature","climate","storm","tornado"],
+    elect: ["elect","election","elections","politics","political","vote","senate","governor","president","congress","campaign","candidate","ballot","senate race","governor race","midterms","primary","presidential"],
+    house: ["house","nyhouse","cahouse","house races","house race","congress house","representative","district","us house","house district"],
+    tech: ["tech","technology","apple","tesla","spacex","google","microsoft","nvidia","meta","netflix","ai","software","openai","amazon tech"],
+    finance: ["finance","gdp","economy","economic","inflation","cpi","bank","fed","rate","market","stocks","nasdaq","s&p"],
+    corp: ["corp","company","business","corporation","earnings","merger","acquisition","corp earnings","business corp"],
+    prices: ["prices","price","crypto","commodity","cmdty","bitcoin","btc","eth","gold","oil","commodities"],
+    culture: ["culture","music","film","movie","tv","celeb","grammy","oscar","album","show","celebrity"],
   };
   // reverse: alias phrase -> canonical(s)
   const ALIAS_LOOKUP = {};
