@@ -399,7 +399,16 @@ async function loadPool(){
         // if(!found) for(const s of states){ if(new RegExp(`\\b${s}\\b`).test(text)){ found=s; break; } }
         if(!found){
           const cityMap={ "NEW YORK":"NY","NYC":"NY","LOS ANGELES":"CA","CHICAGO":"IL","BOSTON":"MA","PITTSBURGH":"PA","PHILADELPHIA":"PA","MIAMI":"FL","ATLANTA":"GA","SEATTLE":"WA","SAN FRANCISCO":"CA","HOUSTON":"TX","DALLAS":"TX","WASHINGTON":"DC","DETROIT":"MI","CLEVELAND":"OH","DENVER":"CO","PHOENIX":"AZ"};
-          for(const [city,st] of Object.entries(cityMap)){ if(text.includes(city)){ found=st; break; } }
+          for(const [city,st] of Object.entries(cityMap)){ if(new RegExp(`\\b${city.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\b`).test(text)){ found=st; break; } }
+          // conference HQ mapping — fixes Big Ten CA (REGULAR->LA) and SEC DC
+          if(!found){
+            const confMap={"BIG TEN":"IL","BIG 12":"TX","BIG12":"TX","PAC-12":"CA","PAC 12":"CA","SEC":"AL","ACC":"NC","BIG EAST":"NY","AAC":"TX","AMERICAN ATHLETIC":"TX","CONFERENCE USA":"TX","CUSA":"TX","MAC":"OH","MOUNTAIN WEST":"CO","MWC":"CO","SUN BELT":"LA","IVY LEAGUE":"NJ","IVY":"NJ","NEC":"NJ","WCC":"CA"};
+            for(const [conf,st] of Object.entries(confMap)){
+              if(conf==="SEC" && !/\bSEC\b/.test(text)) continue;
+              if(conf==="ACC" && !/\bACC\b/.test(text)) continue;
+              if(text.includes(conf)){ found=st; break; }
+            }
+          }
         }
         if(!found){
           const countries=["ARGENTINA","BRAZIL","BULGARIA","CAPE VERDE","ESTONIA","FRANCE","GHANA","HUNGARY","MOLDOVA","MONGOLIA","PHILIPPINES","SOUTH KOREA","WORLD","EU","UK","CANADA","MEXICO","GERMANY","JAPAN","KOREA"];
@@ -415,7 +424,7 @@ async function loadPool(){
             if(!found && ["BANK","FINANCE","MARKET"].some(k=> text.includes(k))) found="NY";
             if(!found) found="DC";
           } else if(broad==="politics") found="DC";
-          else if(broad==="sports") found="DC";
+          else if(broad==="sports") found="US";
           else if(broad==="weather") found="World";
           else found="DC";
         }
@@ -691,11 +700,15 @@ function feedback(guess, target){
     if(ratio<=0.25) vArrow='';
   }
   // market name: green if exact, yellow if shares ≥2 meaningful words (e.g., "total restaurant" → yellow, ignore will/the/with)
+  // DETAIL already captures sport/league (NFL/CFB/CBB etc), so sport words alone should not count toward MARKET yellow
   let name = 'gray';
   if (guess.ticker===target.ticker) name='green';
   else {
-    const stop=new Set(["will","the","with","from","this","that","have","been","are","was","were","for","and","our","your","their","about","after","before","whether","which","when"]);
-    const tok = s => (s||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim().split(/\s+/).filter(w=>w.length>3 && !stop.has(w));
+    const stop=new Set(["will","the","with","from","this","that","have","been","are","was","were","for","and","our","your","their","about","after","before","whether","which","when",
+      // sport/category words already represented in CATEGORY/DETAIL — don't reward MARKET yellow for them
+      "college","football","basketball","baseball","hockey","soccer","tennis","golf","esports","sports","pro","college football","regular","season","champion","championship","winner","conference","tournament","league","series","cup"]);
+    const sportStop=new Set(["college","football","basketball","baseball","hockey","soccer","tennis","golf","esports","pro","nfl","nba","mlb","cfb","cbb","nhl","wnba","regular","season","champion","championship","winner","conference","tournament","league","series","cup","game","match","team","player"]);
+    const tok = s => (s||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim().split(/\s+/).filter(w=>w.length>3 && !stop.has(w) && !sportStop.has(w));
     const aSet = new Set(tok(guess.name));
     const bSet = new Set(tok(target.name));
     let common=0;
@@ -723,8 +736,8 @@ function addRow(guess, animate){
     houseDetail = `<div class="text-[11px] font-bold opacity-70 mt-1">↳ ${specific}</div>`;
   }
   row.innerHTML=`
-    <div class="tile ${fb.name} p-2 md:p-3 flex flex-col justify-center min-h-[64px]">
-      <div class="text-[17px] md:text-[19px] font-black leading-tight line-clamp-2">${guess.name}</div>
+    <div class="tile ${fb.name} p-2 md:p-3 flex flex-col justify-center min-h-[72px]">
+      <div class="text-[14px] md:text-[15px] font-black leading-tight whitespace-normal break-words" title="${guess.name.replace(/"/g,'&quot;')}">${guess.name}</div>
       ${houseDetail}
     </div>
     <div class="tile ${fb.broad} p-2 flex flex-col items-center justify-center text-center min-h-[64px]">
@@ -860,21 +873,31 @@ function renderAutocomplete(q){
   const aliasTokens=(s)=>{
     const t=s.toLowerCase().trim();
     if(ALIAS_LOOKUP[t]) return [ALIAS_LOOKUP[t], t];
-    // phrase contains alias (e.g., "college football coaches" contains "college football")
     const hits=[];
     for(const ph of Object.keys(ALIAS_LOOKUP)){
-      if(t===ph || t.includes(ph)) hits.push(ALIAS_LOOKUP[ph]);
+      if(t===ph || t.includes(ph) || ph.includes(t) || ph.startsWith(t) || t.startsWith(ph)) {
+        // allow prefix match: "super bow" -> "super bowl", "super" -> super bowl/nfl etc
+        // but ignore very short aliases (<3) for contains/ph.includes to avoid flooding
+        if(ph.length>=3 || t.length>=3) hits.push(ALIAS_LOOKUP[ph]);
+      }
     }
-    // also add split tokens that are alias keys
+    // also add split tokens that are alias keys (with prefix)
     for(const tok of t.split(/\s+/)){
       if(ALIAS_LOOKUP[tok] && !hits.includes(ALIAS_LOOKUP[tok])) hits.push(ALIAS_LOOKUP[tok]);
+      for(const ph of Object.keys(ALIAS_LOOKUP)){
+        if(ph.startsWith(tok) && tok.length>=3) hits.push(ALIAS_LOOKUP[ph]);
+        if(tok.startsWith(ph) && ph.length>=2) hits.push(ALIAS_LOOKUP[ph]);
+      }
     }
     return [...new Set(hits)];
   };
   const queryTokens=raw.split(/\s+/).filter(Boolean);
   const expanded=[...queryTokens, ...aliasTokens(raw)];
-  // also if raw contains super+ bowl, add sb
-  if(raw.includes("super") && raw.includes("bowl") && !expanded.includes("sb")) expanded.push("sb","super bowl");
+  // also if raw contains super (+ partial bowl), add sb — handles "super bow" truncated typing
+  if(raw.includes("super") && !expanded.includes("sb")) expanded.push("sb","super bowl");
+  if(raw.startsWith("super ") || raw.startsWith("super b")) {
+    if(!expanded.includes("sb")) expanded.push("sb","super bowl");
+  }
   const wordSet=(s)=> new Set((s||"").toLowerCase().split(/[^a-z0-9]+/).filter(Boolean));
   const scored=[];
   for(const p of POOL){

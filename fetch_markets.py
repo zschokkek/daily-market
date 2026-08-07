@@ -210,10 +210,50 @@ def get_location(event_ticker, title, broad, raw_cat, subcategory):
     # for st in US_STATES:
     #     if re.search(r'\b'+st+r'\b', text):
     #         return st
-    # 4. city to state
+    # 4. city to state — use word boundaries to avoid REGULAR -> LA false positive
     for city, st in CITY_TO_STATE.items():
-        if city in text:
+        if re.search(r'\b' + re.escape(city) + r'\b', text):
             return st
+    # 4b. conference HQ mapping — sports conference championships have meaningful HQ state, not generic DC/CA
+    # (fixes Big Ten CA due to REGULAR->LA and SEC DC)
+    CONFERENCE_TO_STATE = {
+        "BIG TEN": "IL",  # Chicago IL
+        "BIG 12": "TX",  # Irving TX
+        "BIG12": "TX",
+        "PAC-12": "CA",  # San Francisco CA
+        "PAC 12": "CA",
+        "SEC": "AL",  # Birmingham AL — SEC not DC
+        "ACC": "NC",  # Greensboro NC
+        "BIG EAST": "NY",  # NYC
+        "AAC": "TX",  # American Athletic — Irving TX
+        "AMERICAN ATHLETIC": "TX",
+        "CONFERENCE USA": "TX",
+        "CUSA": "TX",
+        "MAC": "OH",  # Cleveland OH
+        "MOUNTAIN WEST": "CO",
+        "MWC": "CO",
+        "SUN BELT": "LA",
+        "IVY LEAGUE": "NJ",  # Princeton NJ
+        "IVY": "NJ",
+        "NEC": "NJ",
+        "WCC": "CA",
+    }
+    if broad == "sports":
+        for conf, st in CONFERENCE_TO_STATE.items():
+            if conf in text:
+                # avoid SEC false positive inside "SECOND" — SEC must be word
+                if conf == "SEC":
+                    if re.search(r'\bSEC\b', text):
+                        return st
+                    else:
+                        continue
+                if conf == "ACC":
+                    # ACC also appears in "ACC..." but avoid matching inside other words? ACC is distinct enough
+                    if re.search(r'\bACC\b', text) or " ACC " in f" {text} ":
+                        return st
+                    else:
+                        continue
+                return st
     # 5. country
     for c in COUNTRY_KEYS:
         if c in text:
@@ -235,12 +275,12 @@ def get_location(event_ticker, title, broad, raw_cat, subcategory):
             return "NY"
         return "DC"
     if broad=="sports":
+        # re-check city with word boundaries after conference check
         for city, st in CITY_TO_STATE.items():
-            if city in text:
+            if re.search(r'\b' + re.escape(city) + r'\b', text):
                 return st
-        # sports without city still US state-level -> return home-team state if possible, else DC not right - default to NY for national?
-        # For now, national sports like "Will NFL happen" -> DC
-        return "DC"
+        # sports without city / conference -> national
+        return "US"
     if broad=="politics":
         # national politics -> DC per spec
         for c in COUNTRY_KEYS:
