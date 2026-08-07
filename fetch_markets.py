@@ -996,6 +996,20 @@ for p in pool:
     if exp.startswith("2027-") and any(k in tk for k in ("KXMIDTERM","KXAKMOV","HOUSE","KXHOUSE","CONTROLH","MOV","VOTETURN")):
         p["expiration"] = "2026-" + exp[5:]
 
+# strip price targets from 15min/hourly display names — keep as clean "BTC 15 Min" / "Gold 1 Hour" per request
+for p in pool:
+    if p.get("subcat") in ("BTC 15M","ETH 15M","GOLD 15M","SOL 15M","BNB 15M","HYPE 15M","BTC 1H","ETH 1H","SOL 1H","BNB 1H","HYPE 1H","GOLD 1H"):
+        # e.g. "BTC 15 min · $64,965.53 target" -> "BTC 15 Min"
+        name = p.get("name","")
+        if " · " in name:
+            p["name"] = name.split(" · ")[0].strip()
+            # normalize casing: "BTC 15 min" -> "BTC 15 Min"
+            if "15 min" in p["name"].lower():
+                p["name"] = p["name"].replace("15 min","15 Min").replace("15 Min","15 Min")
+        # also clean price_label that is the target strike — hide for 15M/1H, keep only odds
+        # price_label like "Above 64965.53" or "Target Price: $..." or "$64,900 to ..." is the strike — hide
+        p["price_label"] = ""
+
 # filter near-certain bunched and any residual ≥97¢ (carry-through, but keep Rotten Tomatoes multi-strike)
 pool = [p for p in pool if p.get("price", 0) < 97 or (p.get("broad")=="culture" and p.get("subcat")=="FILM" and "rotten" in (p.get("name","") or "").lower())]
 

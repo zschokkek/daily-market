@@ -569,6 +569,16 @@ async function loadPool(){
     }
     if(fixed) console.log(`[overrides] applied ${fixed} pool tag fixes`);
   }
+  // strip price targets from 15M/1H display — e.g. "BTC 15 min · $64,965.53 target" -> "BTC 15 Min"
+  for(const p of POOL){
+    if(["BTC 15M","ETH 15M","GOLD 15M","SOL 15M","BNB 15M","HYPE 15M","BTC 1H","ETH 1H","SOL 1H","BNB 1H","HYPE 1H","GOLD 1H"].includes(p.subcat)){
+      if(p.name && p.name.includes(" · ")){
+        p.name = p.name.split(" · ")[0].trim();
+        if(p.name.toLowerCase().includes("15 min")) p.name = p.name.replace(/15 min/i,"15 Min");
+      }
+      p.price_label="";
+    }
+  }
   POOL.sort((a,b)=> a.ticker.localeCompare(b.ticker));
 
   // GitHub Pages cache-bust: pool/app changed (push) must clear old guesses/target even with no server (/chosen 404)
