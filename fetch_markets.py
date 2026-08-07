@@ -599,8 +599,15 @@ for ev in events:
     # election results should show actual election date, not settlement — shift 2027 → 2026
     # Kalshi sets expiration to settlement (~Jan/Feb 2027) but game should show Nov 03, 26
     _ticker_up = (ev.get("event_ticker") or "").upper()
+    _title_up2 = (ev.get("title") or "").upper()
     if broad == "politics" and exp.startswith("2027-") and any(k in _ticker_up for k in ("KXMIDTERM", "KXAKMOV", "HOUSE", "KXHOUSE", "CONTROLH")):
         exp = "2026-" + exp[5:]
+    # general 2026 elections (GOV/SENATE/HOUSE/PRES winner) should be Nov 03, 2026 — not settlement Jan 2027
+    # keep primaries/nominees/margins on their actual primary date; CONTROLH also Nov 03
+    if broad == "politics" and sub_for_pool in ("GOV","SENATE","HOUSE","PRES") and "26" in _ticker_up and "PRIMARY" not in _ticker_up and "PRIMARY" not in _title_up2 and "NOM" not in _ticker_up and "NOMINEE" not in _title_up2:
+        exp = "2026-11-03T15:00:00Z"
+    if broad == "politics" and _ticker_up == "CONTROLH-2026":
+        exp = "2026-11-03T15:00:00Z"
 
     raw_title = ev.get("title") or ev.get("event_ticker")
     expanded_title = expand_team_name(raw_title) if broad=="sports" else raw_title
