@@ -538,6 +538,31 @@ async function loadPool(){
   }});
   POOL.sort((a,b)=> a.ticker.localeCompare(b.ticker));
 
+  // GitHub Pages cache-bust: pool changed (push) must clear old guesses/target even with no server (/chosen 404)
+  try{
+    const poolVersion = `${POOL.length}:${POOL[0]?.ticker||''}:${POOL[POOL.length-1]?.ticker||''}:${POOL[0]?.name?.slice(0,20)||''}`;
+    const storedVersion = localStorage.getItem('kalshi-wordle-pool-version');
+    if(storedVersion && storedVersion!==poolVersion){
+      const tkKey='kalshi-wordle-target-ticker', idxKey='kalshi-wordle-target-idx';
+      localStorage.removeItem(tkKey); localStorage.removeItem(idxKey);
+      localStorage.removeItem('kalshi-wordle-guesses-'+TODAY_ISO);
+      localStorage.removeItem('kalshi-wordle-gaveup-'+TODAY_ISO);
+      guesses=[]; GAVE_UP=false;
+      console.log('[CACHE] cleared pool version change', storedVersion, '->', poolVersion);
+    }
+    localStorage.setItem('kalshi-wordle-pool-version', poolVersion);
+    // also if stored target no longer in pool (market expired/removed), clear
+    const storedTicker = localStorage.getItem('kalshi-wordle-target-ticker');
+    if(storedTicker && !POOL.some(p=>p.ticker===storedTicker || p.event_ticker===storedTicker)){
+      const tkKey='kalshi-wordle-target-ticker', idxKey='kalshi-wordle-target-idx';
+      localStorage.removeItem(tkKey); localStorage.removeItem(idxKey);
+      localStorage.removeItem('kalshi-wordle-guesses-'+TODAY_ISO);
+      localStorage.removeItem('kalshi-wordle-gaveup-'+TODAY_ISO);
+      guesses=[]; GAVE_UP=false;
+      console.log('[CACHE] cleared stale target not in pool', storedTicker);
+    }
+  }catch(e){}
+
   // update footer if present, banner removed per user request
   const footerEl=document.getElementById('footer-pool');
   if(footerEl) footerEl.textContent = `${POOL.length.toLocaleString()} markets`;
