@@ -209,9 +209,11 @@ def get_location(event_ticker, title, broad, raw_cat, subcategory):
     if "OSCAR" in text:
         return "CA"
     import re
-    # 1. full state names (Massachusetts Governor -> MA, California -> CA)
+    # 1. full state names (Massachusetts Governor -> MA, California -> CA) — use word boundaries, and handle GEORGIAN -> country Georgia
+    if "GEORGIAN" in text:
+        return "Georgia"
     for name, code in STATE_FULL_TO_CODE.items():
-        if name in text:
+        if re.search(r'\b' + re.escape(name) + r'\b', text):
             return code
     # 2. district codes like CA-22, TX09, MI10
     m=re.search(r'\b([A-Z]{2})-?\d{1,2}\b', text)
@@ -803,9 +805,9 @@ if mov_buckets or vot_buckets:
         agg = {
             "name": name_st,
             "broad": "politics",
-            "subcat": "ELECT",
-            "category": "Politics · ELECT",
-            "raw_category": "Elections",
+            "subcat": "HOUSE",
+            "category": "Politics · HOUSE",
+            "raw_category": "Politics",
             "location": state,
             "strikes": int(strikes_mode),
             "expiration": exp,
@@ -832,9 +834,9 @@ if mov_buckets or vot_buckets:
         agg = {
             "name": name_st,
             "broad": "politics",
-            "subcat": "ELECT",
-            "category": "Politics · ELECT",
-            "raw_category": "Elections",
+            "subcat": "HOUSE",
+            "category": "Politics · HOUSE",
+            "raw_category": "Politics",
             "location": state,
             "strikes": int(strikes_mode),
             "expiration": exp,

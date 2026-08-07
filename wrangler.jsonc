@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "daily-market",
+  "compatibility_date": "2026-08-07",
+  // Static asset hosting — cheapest (free tier). Serves index.html + pool.json + market_atlas.json
+  // No Workers JS needed; Workers Sites serves the whole directory.
+  "assets": {
+    "directory": ".",
+    "not_found_handling": "single-page-application"
+  },
+  // Optional: bind to custom domain via `wrangler deploy` then `wrangler domains add daily.zschokkek.com`
+  // Or use Cloudflare Pages (same cost, git-integrated). This config works for `wrangler deploy`.
+  "observability": {
+    "enabled": false
+  }
+}
