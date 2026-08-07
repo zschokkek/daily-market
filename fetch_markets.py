@@ -452,6 +452,12 @@ for ev in events:
         detail = f"{raw_cat} · {sub_for_pool}" if sub and sub!=raw_cat else raw_cat or broad
         detail = detail.strip()
 
+    # election results should show actual election date, not settlement — shift 2027 → 2026
+    # Kalshi sets expiration to settlement (~Jan/Feb 2027) but game should show Nov 03, 26
+    _ticker_up = (ev.get("event_ticker") or "").upper()
+    if broad == "politics" and exp.startswith("2027-") and any(k in _ticker_up for k in ("KXMIDTERM", "KXAKMOV", "HOUSE", "KXHOUSE", "CONTROLH")):
+        exp = "2026-" + exp[5:]
+
     raw_title = ev.get("title") or ev.get("event_ticker")
     expanded_title = expand_team_name(raw_title) if broad=="sports" else raw_title
     location = get_location(ev.get("event_ticker",""), expanded_title or "", broad, raw_cat, sub)
@@ -542,9 +548,8 @@ if house_buckets:
         # aggregate into one per state: e.g., NYHOUSE
         vol_sum = sum(x.get("volume",0) for x in bucket)
         strikes_sum = sum(x.get("strikes",1) for x in bucket)
-        # earliest expiration among bucket
-        exps = [x.get("expiration") for x in bucket if x.get("expiration")]
-        exp = min(exps) if exps else bucket[0].get("expiration")
+        # election day, not settlement — all House races = Nov 03, 26
+        exp = "2026-11-03T15:00:00Z"
         ticker_st = f"{state}HOUSE"
         # intuitive name for normal user
         state_full = {v:k.title() for k,v in STATE_FULL_TO_CODE.items()}.get(state, state)
@@ -577,6 +582,118 @@ if house_buckets:
         }
         non_house.append(agg)
     pool = non_house
+
+# Bunch House margin + voter turnout by state — same playability fix as House races
+# KXMIDTERMMOV-* (margin of victory, ~9 strikes) and KXMIDTERMVOTETURN-* (turnout, ~5 strikes)
+# Without bunching, 300+ district rows flood pool and are unguessable. Group per state.
+import collections as _coll
+MOV_RE = re.compile(r'KXMIDTERMMOV-([A-Z]{2})', re.I)
+VOT_RE = re.compile(r'KXMIDTERMVOTETURN-([A-Z]{2})', re.I)
+# also catch KXAKMOV Alaska margin
+AKMOV_RE = re.compile(r'KXAKMOV', re.I)
+mov_buckets = {}  # state -> list
+vot_buckets = {}
+remaining = []
+for p in pool:
+    tk = (p.get("event_ticker") or p.get("ticker") or "").upper()
+    is_mov = False
+    is_vot = False
+    state = None
+    m = MOV_RE.search(tk)
+    if m and m.group(1).upper() in US_STATES:
+        is_mov = True
+        state = m.group(1).upper()
+    elif AKMOV_RE.search(tk):
+        # Alaska Senate margin single — bucket as AK margin
+        is_mov = True
+        state = "AK"
+    else:
+        m2 = VOT_RE.search(tk)
+        if m2 and m2.group(1).upper() in US_STATES:
+            is_vot = True
+            state = m2.group(1).upper()
+        elif "KXMIDTERMVOTETURN" in tk:
+            # fallback: extract state via -XX digit pattern
+            m3 = re.search(r'-([A-Z]{2})\d', tk)
+            if m3 and m3.group(1).upper() in US_STATES:
+                is_vot = True
+                state = m3.group(1).upper()
+    if (is_mov or is_vot) and state:
+        if is_mov:
+            mov_buckets.setdefault(state, []).append(p)
+        else:
+            vot_buckets.setdefault(state, []).append(p)
+    else:
+        remaining.append(p)
+
+if mov_buckets or vot_buckets:
+    pool = remaining
+    for state, bucket in mov_buckets.items():
+        vol_sum = sum(x.get("volume",0) for x in bucket)
+        # strikes stays same: mode (most common), not sum — margin typically 9
+        strikes_mode = _coll.Counter(x.get("strikes",9) for x in bucket).most_common(1)[0][0]
+        exp = "2026-11-03T15:00:00Z"
+        state_full = {v:k.title() for k,v in STATE_FULL_TO_CODE.items()}.get(state, state)
+        name_st = f"{state_full} House Margin"
+        prices = [x.get("price",50) for x in bucket if x.get("price")]
+        vols_w = [x.get("volume",0) or 1 for x in bucket]
+        wavg = sum(p*w for p,w in zip(prices, vols_w))/sum(vols_w) if prices else 50
+        agg_price = int(round(wavg))
+        agg = {
+            "name": name_st,
+            "broad": "politics",
+            "subcat": "ELECT",
+            "category": "Politics · ELECT",
+            "raw_category": "Elections",
+            "location": state,
+            "strikes": int(strikes_mode),
+            "expiration": exp,
+            "volume": int(vol_sum),
+            "price": agg_price,
+            "price_ticker": f"{state}MOV",
+            "price_label": "Margin",
+            "ticker": f"{state}MOV",
+            "event_ticker": f"{state}MOV",
+            "subtickers": [x.get("event_ticker") for x in bucket],
+            "constituents": len(bucket),
+        }
+        pool.append(agg)
+    for state, bucket in vot_buckets.items():
+        vol_sum = sum(x.get("volume",0) for x in bucket)
+        strikes_mode = _coll.Counter(x.get("strikes",5) for x in bucket).most_common(1)[0][0]
+        exp = "2026-11-03T15:00:00Z"
+        state_full = {v:k.title() for k,v in STATE_FULL_TO_CODE.items()}.get(state, state)
+        name_st = f"{state_full} House Turnout"
+        prices = [x.get("price",50) for x in bucket if x.get("price")]
+        vols_w = [x.get("volume",0) or 1 for x in bucket]
+        wavg = sum(p*w for p,w in zip(prices, vols_w))/sum(vols_w) if prices else 50
+        agg_price = int(round(wavg))
+        agg = {
+            "name": name_st,
+            "broad": "politics",
+            "subcat": "ELECT",
+            "category": "Politics · ELECT",
+            "raw_category": "Elections",
+            "location": state,
+            "strikes": int(strikes_mode),
+            "expiration": exp,
+            "volume": int(vol_sum),
+            "price": agg_price,
+            "price_ticker": f"{state}VOTETURN",
+            "price_label": "Turnout",
+            "ticker": f"{state}VOTETURN",
+            "event_ticker": f"{state}VOTETURN",
+            "subtickers": [x.get("event_ticker") for x in bucket],
+            "constituents": len(bucket),
+        }
+        pool.append(agg)
+
+# final safety: any remaining election expiration still in 2027 → force to 2026 (actual election date)
+for p in pool:
+    tk = (p.get("event_ticker") or "").upper()
+    exp = p.get("expiration","")
+    if exp.startswith("2027-") and any(k in tk for k in ("KXMIDTERM","KXAKMOV","HOUSE","KXHOUSE","CONTROLH","MOV","VOTETURN")):
+        p["expiration"] = "2026-" + exp[5:]
 
 pool.sort(key=lambda x: x["event_ticker"])
 
