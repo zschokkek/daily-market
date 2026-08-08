@@ -1,8 +1,6 @@
 SENATETX-26 | politics | TX | Texas Senate winner?
-KXOSCARNOMACTO-27 | culture | CA | Oscar nominees: Best Actor
-KXNFLWINS-27ARI | sports | AZ | Pro Football: Arizona Total Wins
-KXAGENCYELIM-29 | politics | DC | Which agencies will Trump eliminate?
-GOVPARTYPA-26 | politics | PA | Pennsylvania Governor winner?
-KXMLBWINS-SEA-26 | sports | WA | Seattle pro baseball wins this season?
-ILVOTETURN | politics | IL | Illinois House Turnout
-KXGOOGTOKEND-26AUG31 | business | CA | Google average token price on Aug 31, 2026
+KXPRESPERSON-28 | politics | DC | 2028 U.S. Presidential Election winner?
+KXOSCARPIC-27 | culture | CA | Oscar Winner: Best Picture
+APPLEFOLD | business | CA | When will Apple announce foldable iPhone?
+KXBTC15M-26AUG071730 | prices | N/A | BTC 15 Min
+GOVPARTYFL-26 | politics | FL | Florida Governor winner?
