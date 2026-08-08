@@ -51,7 +51,7 @@ class Handler(SimpleHTTPRequestHandler):
                             today = datetime.datetime.now(ZoneInfo("America/New_York")).date()
                         except:
                             today = datetime.datetime.now(datetime.timezone.utc).date()
-                        ref = datetime.date(2026,8,7)
+                        ref = datetime.date(2026,8,8)
                         days = (today - ref).days
                         idx = days % len(hidden)
                         chosen = hidden[idx]
@@ -223,7 +223,7 @@ if __name__=="__main__":
                     today = datetime.datetime.now(ZoneInfo("America/New_York")).date()
                 except:
                     today = datetime.datetime.now(datetime.timezone.utc).date()
-                ref = datetime.date(2026,8,7)
+                ref = datetime.date(2026,8,8)
                 days = (today - ref).days
                 idx = days % len(hidden)
                 chosen = hidden[idx]
